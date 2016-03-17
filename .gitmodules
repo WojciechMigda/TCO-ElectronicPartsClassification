@@ -1,0 +1,3 @@
+[submodule "py/hyperopt"]
+	path = py/hyperopt
+	url = https://github.com/hyperopt/hyperopt.git
