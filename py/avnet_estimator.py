@@ -223,6 +223,15 @@ def work(estimator,
         sample.set_value('TX_Q4', monthly[[10, 11, 12]].sum())
         sample = sample.append(monthly.rename(lambda i: 'TX_M_' + str(i)))
 
+        tx_days = df['TRANSACTION_DATE_1'].combine(
+                df[['TRANSACTION_DATE_2', 'TRANSACTION_DATE_3']],
+                 func=lambda y, m_d: y * 365 + m_d['TRANSACTION_DATE_2'] * 30 + m_d['TRANSACTION_DATE_3'])
+        tx_days.sort()
+        delta_tx_days = tx_days.diff()
+        means_delta_tx_days = delta_tx_days.mean()
+        sample.set_value('DTX_DAYS_MEAN', means_delta_tx_days)
+        sample.set_value('DTX_DAYS_REL_STD', delta_tx_days.std() / means_delta_tx_days)
+
 #        # most frequent customer
 #        custcounts = df['CUSTOMER_NUMBER'].value_counts()
 #        topcust = custcounts.index[0]
@@ -231,9 +240,10 @@ def work(estimator,
 #        zipcounts = df['CUSTOMER_ZIP'].value_counts()
 #        topzip = zipcounts.index[0]
 #        sample.set_value('TOP_ZIP', topzip)
-#        # number of transactions
+
+#        # number of unique transactions
 #        sample.set_value('NTRANS', len(df))
-#        # number of different customers
+#        # number of unique customers
 #        custcounts = df['CUSTOMER_NUMBER'].value_counts()
 #        sample.set_value('NCUST', len(custcounts))
 
@@ -324,8 +334,8 @@ def work(estimator,
             #'num_pairsample': hp.quniform ('x_num_pairsample', 1, 8, 1),
             #'learning_rate': hp.uniform ('x_learning_rate', 0.03, 0.06),
 
-            #'subsample': hp.uniform ('x_subsample', 0.4, 1.0),
-            #'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.4, 1.0)
+            'subsample': hp.uniform ('x_subsample', 0.4, 1.0),
+            'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.4, 1.0)
             }
         best = fmin(fn=objective,
             space=space,
