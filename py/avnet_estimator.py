@@ -138,6 +138,26 @@ def ParseDates(df, colnames):
     return df
 
 
+def Fractions(df, symbols, colnames):
+    from pandas import Series
+    vec = Series()
+    for col in colnames:
+        valcounts = df[col].value_counts(normalize=True)
+        valcounts = valcounts.reindex(symbols[col], fill_value=0.)
+        vec = vec.append(valcounts.rename(lambda i: col + '_' + str(i)))
+        pass
+    return vec
+
+
+def AvnetScorer(y_true, y_pred):
+    from sklearn.metrics import confusion_matrix
+    cmx = confusion_matrix(y_true, y_pred, labels=[0, 1, 2]).T
+    from numpy import array, multiply
+    cost = array([[0.0, 0.20, 0.70], [0.50, 0.0, 0.01], [1.00, 0.01, 0.0]])
+    score_m = multiply(cmx, cost)
+    score = 1e6 * (1. - score_m.sum()) / cmx.sum()
+    return score
+
 #from sklearn.base import BaseEstimator, ClassifierMixin
 
 
@@ -165,11 +185,59 @@ def work(estimator,
 
     train = ParseDates(train, ['TRANSACTION_DATE', 'CUSTOMER_FIRST_ORDER_DATE'])
 
+    symbols = {}
+    for col in [
+        'PRICE_METHOD', 'ORDER_SOURCE', 'CUSTOMER_ACCOUNT_TYPE',
+        'CUSTOMER_MANAGED_LEVEL', 'CUSTOMER_TYPE2', 'CUSTOMER_TYPE1',
+        'CUSTOMER_ZIP', 'CUSTOMER_NUMBER'
+        ]:
+        uniq = set(train[col])
+        symbols[col] = list(uniq)
+        pass
 
     grouped = train.groupby(['PRODUCT_NUMBER', 'CUSTOMER_SEGMENT1'])
     samples = []
-    for k, v in grouped:
-        sample = v.iloc[0][ATTRIBUTES]
+    for k, df in grouped:
+        sample = Fractions(df, symbols, [
+        'PRICE_METHOD', 'ORDER_SOURCE', 'CUSTOMER_ACCOUNT_TYPE',
+        'CUSTOMER_MANAGED_LEVEL', 'CUSTOMER_TYPE2', 'CUSTOMER_TYPE1',
+        #'CUSTOMER_ZIP', 'CUSTOMER_NUMBER'
+        ])
+        ATTRIBUTES2 = ['PRODUCT_CLASS_ID1',
+              'BRAND', # binary
+              'PRODUCT_SALES_UNIT', # binary
+              'PRODUCT_UNIT_OF_MEASURE',
+              'SPECIAL_PART'
+              ]
+        sample = sample.append(df.iloc[0][ATTRIBUTES2])
+
+        pcost1_mean = df['PRODUCT_COST1'].abs().mean()
+        pcost1_std = df['PRODUCT_COST1'].abs().std()
+        sample.set_value('PCOST1_REL_STD', pcost1_std / pcost1_mean)
+
+        monthly = df['TRANSACTION_DATE_2'].value_counts(normalize=True)
+        monthly = monthly.reindex([i + 1 for i in range(12)], fill_value=0.)
+        sample.set_value('TX_Q1', monthly[[1, 2, 3]].sum())
+        sample.set_value('TX_Q2', monthly[[4, 5, 6]].sum())
+        sample.set_value('TX_Q3', monthly[[7, 8, 9]].sum())
+        sample.set_value('TX_Q4', monthly[[10, 11, 12]].sum())
+        sample = sample.append(monthly.rename(lambda i: 'TX_M_' + str(i)))
+
+#        # most frequent customer
+#        custcounts = df['CUSTOMER_NUMBER'].value_counts()
+#        topcust = custcounts.index[0]
+#        sample.set_value('TOP_CUST', topcust)
+#        # most frequent zip
+#        zipcounts = df['CUSTOMER_ZIP'].value_counts()
+#        topzip = zipcounts.index[0]
+#        sample.set_value('TOP_ZIP', topzip)
+#        # number of transactions
+#        sample.set_value('NTRANS', len(df))
+#        # number of different customers
+#        custcounts = df['CUSTOMER_NUMBER'].value_counts()
+#        sample.set_value('NCUST', len(custcounts))
+
+        #sample = sample.append(df.iloc[0][['SPECIAL_PART']])
         samples.append(sample)
         pass
 
@@ -178,51 +246,105 @@ def work(estimator,
     train_y = train_df['SPECIAL_PART'].values
     train_X = train_df.drop(['SPECIAL_PART'], axis=1)
 
-    return
-
-
-    #train_X['GENDER'][train_X['GENDER'] == 'U'] = float('nan')
-
-    #train_X = OneHot(train_X, NOMINALS)
-
-    # split train and test
-    dropped_cols = ['ID', 'TARGET']
-
-    train_y = train['TARGET'].values
-    train_X = train.drop(dropped_cols, axis=1)
-    test_X = test.drop(dropped_cols, axis=1)
-
-
-
-    satan_kwargs = \
+    avnet_kwargs = \
     {
         #'objective': 'reg:logistic',
         'objective': 'rank:pairwise',
         'learning_rate': 0.045,
         'min_child_weight': 50,
-        'subsample': 0.8,
-        'colsample_bytree': 0.7,
+        'subsample': 1.0,
+        'colsample_bytree': 1.0,
         'max_depth': 7,
         'n_estimators': nest,
         'nthread': njobs,
         'seed': 0,
-        'cache_opt': 1,
+        #'cache_opt': 1,
         'missing': float('nan')
         #'scoring': NegQWKappaScorer
     }
-
     # override kwargs with any changes
     for k, v in clf_kwargs.items():
-        satan_kwargs[k] = v
+        avnet_kwargs[k] = v
         pass
 
+    # create model instance
     from xgb_sklearn import XGBClassifier
     if estimator == 'XGBClassifier':
-        clf = XGBClassifier(**satan_kwargs)
+        clf = XGBClassifier(**avnet_kwargs)
         pass
     else:
-        clf = globals()[estimator](**satan_kwargs)
+        clf = globals()[estimator](**avnet_kwargs)
         pass
+
+    from sklearn.metrics import make_scorer
+    tco_scorer = make_scorer(AvnetScorer)
+
+    if do_hyperopt:
+        print(clf)
+        def objective(space):
+            #param_grid = {'objective': ['binary:logistic']}
+            #param_grid = {'objective': ['binary:logitraw']}
+            param_grid = {'objective': ['rank:pairwise']}
+            #param_grid = {'objective': ['rank:pairwise'], 'booster_type': ['gblinear']}
+            for k, v in space.items():
+                if k in ['n_estimators', 'max_depth', 'min_child_weight', 'num_pairwise']:
+                    v = int(v)
+                    pass
+                param_grid[k] = [v]
+                pass
+
+            from sklearn.cross_validation import StratifiedKFold, LeaveOneOut
+            from sklearn.grid_search import GridSearchCV
+            grid = GridSearchCV(estimator=clf,
+                            param_grid=param_grid,
+                            #cv=StratifiedKFold(train_y, n_folds=nfolds),
+                            cv=LeaveOneOut(91),
+                            scoring=tco_scorer,
+                            n_jobs=1,
+                            #verbose=2,
+                            refit=False)
+            grid.fit(train_X, train_y)
+
+            print('best score: {:.5f}  best params: {}'.format(grid.best_score_, grid.best_params_))
+            return -grid.best_score_
+
+        from sys import path as sys_path
+        sys_path.insert(0, './hyperopt')
+        from hyperopt import fmin, tpe, hp
+
+        # cheatsheet:
+        # https://github.com/hyperopt/hyperopt/wiki/FMin#21-parameter-expressions
+        space = {
+            'n_estimators': hp.quniform("x_n_estimators", 50, 400, 10),
+            'max_depth': hp.quniform("x_max_depth", 1, 16, 1),
+            'min_child_weight': hp.quniform ('x_min_child', 1, 16, 1),
+            #'gamma': hp.uniform ('x_gamma', 0.0, 2.0),
+            #'scale_pos_weight': hp.uniform ('x_scale_pos_weight', 0.2, 1.0),
+
+            #'num_pairsample': hp.quniform ('x_num_pairsample', 1, 8, 1),
+            #'learning_rate': hp.uniform ('x_learning_rate', 0.03, 0.06),
+
+            #'subsample': hp.uniform ('x_subsample', 0.4, 1.0),
+            #'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.4, 1.0)
+            }
+        best = fmin(fn=objective,
+            space=space,
+            algo=tpe.suggest,
+            max_evals=400,
+            )
+        print(best)
+        pass
+
+    return
+
+    """
+best score: 956593.40659
+best params: {'colsample_bytree': 0.6964853661142929, 'min_child_weight': 2, 'n_estimators': 160, 'subsample': 0.9904670890953792, 'objective': 'rank:pairwise', 'max_depth': 8, 'gamma': 0.663344866861138}
+{'x_gamma': 0.66334486686113803, 'x_min_child': 2.0, 'x_max_depth': 8.0, 'x_subsample': 0.99046708909537917, 'x_colsample_bytree': 0.6964853661142929, 'x_n_estimators': 160.0}
+
+    """
+
+
 
     """ Model crossvalidation """
     if (False
@@ -285,58 +407,6 @@ def work(estimator,
         pass
 
     """ Hyperopt """
-    if do_hyperopt:
-        def objective(space):
-            #param_grid = {'objective': ['binary:logistic']}
-            param_grid = {'objective': ['binary:logitraw']}
-            #param_grid = {'objective': ['rank:pairwise']}
-            #param_grid = {'objective': ['rank:pairwise'], 'booster_type': ['gblinear']}
-            for k, v in space.items():
-                if k in ['n_estimators', 'max_depth', 'min_child_weight', 'num_pairwise']:
-                    v = int(v)
-                    pass
-                param_grid[k] = [v]
-                pass
-
-            from sklearn.cross_validation import StratifiedKFold
-            from sklearn.grid_search import GridSearchCV
-            grid = GridSearchCV(estimator=clf,
-                            param_grid=param_grid,
-                            cv=StratifiedKFold(train_y, n_folds=nfolds),
-                            scoring='roc_auc',
-                            n_jobs=1,
-                            verbose=2,
-                            refit=False)
-            grid.fit(train_X, train_y)
-
-            print('best score: {:.5f}  best params: {}'.format(grid.best_score_, grid.best_params_))
-            return -grid.best_score_
-
-        from sys import path as sys_path
-        sys_path.insert(0, './hyperopt')
-        from hyperopt import fmin, tpe, hp
-
-        # cheatsheet:
-        # https://github.com/hyperopt/hyperopt/wiki/FMin#21-parameter-expressions
-        space = {
-            'n_estimators': hp.quniform("x_n_estimators", 500, 800, 10),
-            'max_depth': hp.quniform("x_max_depth", 4, 8, 1),
-            'min_child_weight': hp.quniform ('x_min_child', 45, 240, 5),
-            'gamma': hp.uniform ('x_gamma', 0.0, 2.0),
-            'scale_pos_weight': hp.uniform ('x_scale_pos_weight', 0.2, 1.0),
-
-            #'num_pairsample': hp.quniform ('x_num_pairsample', 1, 4, 1),
-
-            'subsample': hp.uniform ('x_subsample', 0.4, 1.0),
-            'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.4, 1.0)
-            }
-        best = fmin(fn=objective,
-            space=space,
-            algo=tpe.suggest,
-            max_evals=400,
-            )
-        print(best)
-        pass
 
 
     return
