@@ -1,3 +1,6 @@
 [submodule "py/hyperopt"]
 	path = py/hyperopt
 	url = https://github.com/hyperopt/hyperopt.git
+[submodule "xgboost"]
+	path = xgboost
+	url = https://github.com/WojciechMigda/xgboost.git
