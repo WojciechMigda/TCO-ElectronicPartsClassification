@@ -33,6 +33,8 @@
 #include <utility>
 #include <cstdio>
 #include <map>
+#include <unordered_set>
+#include <iterator>
 
 
 std::vector<std::string>
@@ -238,6 +240,118 @@ double avnet_score(const std::vector<std::string> & y_hat, const std::vector<std
 }
 
 
+struct LOOTestIndices
+{
+    typedef std::pair<int, char> key_type;
+
+    LOOTestIndices(const std::vector<std::string> & df)
+    {
+        for (std::size_t ix{0}; ix < df.size(); ++ix)
+        {
+            const key_type k = key(df, ix);
+
+            if (m_groups.count(k))
+            {
+                m_groups.at(k).push_back(ix);
+            }
+            else
+            {
+                m_groups[k] = {ix};
+            }
+        }
+
+        m_current = m_groups.begin();
+    }
+
+    key_type key(const std::vector<std::string> & df, const std::size_t index) const
+    {
+        if (df.size() == 0)
+        {
+            return {0, 0};
+        }
+        else
+        {
+            char segment = '*';
+            int prod_id = -1;
+
+            sscanf(df[index].c_str(), "%d,%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%c", &prod_id, &segment);
+
+            return {prod_id, segment};
+        }
+    }
+
+    std::vector<std::size_t> yield()
+    {
+        if (m_current == m_groups.cend())
+        {
+            return {};
+        }
+        else
+        {
+            const auto & result = m_current->second;
+            ++m_current;
+            return result;
+        }
+    }
+
+    std::map<key_type, std::vector<std::size_t>> m_groups;
+    std::map<key_type, std::vector<std::size_t>>::const_iterator m_current;
+};
+
+
+std::vector<std::string> test_y_from(const std::vector<std::string> & test_data)
+{
+    std::map<int, std::pair<std::string, std::string>> responses;
+
+    for (const auto & s : test_data)
+    {
+        char segment = 0;
+        int prod_id = -1;
+
+        sscanf(s.c_str(), "%d,%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%c", &prod_id, &segment);
+
+        const auto last_comma = s.rfind(',');
+        const auto last_alpha = s.find_last_not_of("\r\n");
+        const std::string yes_no_maybe(s.cbegin() + last_comma + 1, s.cbegin() + last_alpha + 1);
+
+        if (responses.count(prod_id))
+        {
+            if (segment == 'A')
+            {
+                responses[prod_id].first = yes_no_maybe;
+            }
+            else
+            {
+                responses[prod_id].second = yes_no_maybe;
+            }
+        }
+        else
+        {
+            if (segment == 'A')
+            {
+                responses[prod_id] = std::make_pair(yes_no_maybe, "NA");
+            }
+            else
+            {
+                responses[prod_id] = std::make_pair("NA", yes_no_maybe);
+            }
+        }
+    }
+
+    std::vector<std::string> result;
+
+    std::transform(responses.cbegin(), responses.cend(), std::back_inserter(result),
+        [](const std::pair<int, std::pair<std::string, std::string>> & kv)
+        {
+            return std::to_string(kv.first) + ',' + kv.second.first + ',' + kv.second.second;
+        }
+    );
+
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char **argv)
 {
     const int SEED = (argc == 2 ? std::atoi(argv[1]) : 1);
@@ -260,36 +374,30 @@ int main(int argc, char **argv)
     std::vector<double> CVscores;
     CVscores.reserve(descriptors.size());
 
-    for (const auto & one_out : descriptors)
+
+    LOOTestIndices test_indices_gen(vcsv);
+
+    for (auto test_indices_v = test_indices_gen.yield(); test_indices_v.size() != 0; test_indices_v = test_indices_gen.yield())
     {
+//        std::cerr << test_indices_v.size() << ", " << test_indices_v.front() << ", " << test_indices_v.back() << std::endl;
         std::vector<std::string> train_data;
         std::vector<std::string> test_data;
 
-        for (const auto & item : vcsv)
+        const std::unordered_set<std::size_t> test_indices(test_indices_v.cbegin(), test_indices_v.cend());
+        for (std::size_t ix{0}; ix < vcsv.size(); ++ix)
         {
-            char segment = '*';
-            int prod_id = -1;
-            sscanf(item.c_str(), "%d,%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%*[^,],%c", &prod_id, &segment);
-
-            if (one_out == std::make_pair(prod_id, segment))
+            if (test_indices.find(ix) != test_indices.cend())
             {
-                test_data.push_back(item);
+                test_data.push_back(vcsv[ix]);
             }
             else
             {
-                train_data.push_back(item);
+                train_data.push_back(vcsv[ix]);
             }
         }
 
-//        std::cerr << "One-out: [" << one_out.first << '/' << one_out.second << ']' << std::endl;
-//        std::cerr << "train_data size: " << train_data.size() << std::endl;
-//        std::cerr << "test_data size: " << test_data.size() << std::endl;
-
-        const auto last_comma = test_data.front().rfind(',');
-        const auto last_alpha = test_data.front().find_last_not_of("\r\n");
-        const std::string yes_no_maybe(test_data.front().cbegin() + last_comma + 1, test_data.front().cbegin() + last_alpha + 1);
-        const std::string test_y = std::to_string(one_out.first) + ',' + (one_out.second == 'A' ? yes_no_maybe : "NA") + ',' + (one_out.second == 'B' ? yes_no_maybe : "NA");
-        std::cerr << test_y << std::endl;
+        const std::vector<std::string> test_y = test_y_from(test_data);
+//        std::copy(test_y.cbegin(), test_y.cend(), std::ostream_iterator<std::string>(std::cerr, "\n"));
 
         // remove response from test data
         for (auto  & s : test_data)
@@ -299,13 +407,15 @@ int main(int argc, char **argv)
             s.resize(pos);
         }
 
-        const std::vector<std::string> yhat = {test_y};
+        const std::vector<std::string> yhat = test_y;
 //        const auto yhat = solver.classifyParts(train_data, test_data);
 
         // score
-        const double fold_score = avnet_score(yhat, {test_y});
+        const double fold_score = avnet_score(yhat, test_y);
         CVscores.push_back(fold_score);
+
     }
+
 
     const double final_score = 1e6 * (1. - (std::accumulate(CVscores.cbegin(), CVscores.cend(), 0) / CVscores.size()));
     std::cerr << "  mean score: " << final_score << std::endl;
