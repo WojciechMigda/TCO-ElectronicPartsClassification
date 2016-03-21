@@ -60,6 +60,7 @@ public:
 
     array2d(shape_type shape, value_type initializer);
     array2d(shape_type shape, varray_type && varray);
+    array2d(shape_type shape, const varray_type & varray);
     array2d(const array2d & other);
 
     shape_type shape(void) const;
@@ -96,6 +97,16 @@ array2d<_Type>::array2d(shape_type shape, array2d<_Type>::value_type initializer
 template<typename _Type>
 inline
 array2d<_Type>::array2d(shape_type shape, varray_type && varray)
+:
+    m_shape(shape),
+    m_varray(varray)
+{
+
+}
+
+template<typename _Type>
+inline
+array2d<_Type>::array2d(shape_type shape, const varray_type & varray)
 :
     m_shape(shape),
     m_varray(varray)
