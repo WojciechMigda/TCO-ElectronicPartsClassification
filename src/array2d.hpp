@@ -388,6 +388,8 @@ loadtxt(
         {
             if (cfg.converters().find(cidx) != cfg.converters().cend())
             {
+                const auto last_alpha = item.find_last_not_of("\r\n");
+                item.resize(last_alpha + 1);
                 row[cidx] = cfg.converters().at(cidx)(item.c_str());
             }
             else if (std::is_convertible<value_type, long double>::value)
