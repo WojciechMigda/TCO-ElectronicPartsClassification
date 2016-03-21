@@ -407,8 +407,8 @@ int main(int argc, char **argv)
             s.resize(pos);
         }
 
-        const std::vector<std::string> yhat = test_y;
-//        const auto yhat = solver.classifyParts(train_data, test_data);
+//        const std::vector<std::string> yhat = test_y;
+        const auto yhat = solver.classifyParts(train_data, test_data);
 
         // score
         const double fold_score = avnet_score(yhat, test_y);
