@@ -42,6 +42,7 @@
 #include <unordered_map>
 #include <chrono>
 #include <array>
+#include <tuple>
 
 #include <ctime>
 
@@ -321,9 +322,135 @@ long int timestamp()
 }
 
 
-std::pair<array_type, array_type> gen_features(const array_type train_data, const array_type & test_data)
+struct GroupBy
 {
-    return {train_data, test_data};
+    typedef std::pair<int, char> key_type;
+
+    GroupBy(const array_type & df)
+    {
+        for (std::size_t ix{0}; ix < df.shape().first; ++ix)
+        {
+            const key_type k = key(df, ix);
+
+            if (m_groups.count(k))
+            {
+                m_groups.at(k).push_back(ix);
+            }
+            else
+            {
+                m_groups[k] = {ix};
+            }
+        }
+
+        m_current = m_groups.begin();
+    }
+
+    key_type key(const array_type & df, const std::size_t index) const
+    {
+        if (df.shape().second == 0)
+        {
+            return {0, 0};
+        }
+        else
+        {
+            const int prod_id = df[df.row(index)][0];
+            const char segment = df[df.row(index)][8];
+
+            return {prod_id, segment};
+        }
+    }
+
+    std::vector<std::size_t> yield()
+    {
+        if (m_current == m_groups.cend())
+        {
+            return {};
+        }
+        else
+        {
+            const auto & result = m_current->second;
+            ++m_current;
+            return result;
+        }
+    }
+
+    std::size_t size() const
+    {
+        return m_groups.size();
+    }
+
+    void rewind()
+    {
+        m_current = m_groups.begin();
+    }
+
+    std::map<key_type, std::vector<std::size_t>> m_groups;
+    std::map<key_type, std::vector<std::size_t>>::const_iterator m_current;
+};
+
+
+std::tuple<std::vector<std::string>, array_type, array_type>
+gen_features(
+    const std::vector<std::string> & i_colnames,
+    const array_type & i_train_data,
+    const array_type & i_test_data)
+{
+    typedef std::valarray<real_type> varray_type;
+
+    auto gen_attribute = [&i_colnames](GroupBy & gb, const array_type & arr, const std::string & colname) -> varray_type
+    {
+        const std::size_t cix = colidx(i_colnames, colname);
+        varray_type vec(NAN, gb.size());
+
+        std::size_t vix{0};
+        for (auto group = gb.yield(); group.size() != 0; group = gb.yield())
+        {
+            const varray_type row = arr[arr.row(group.front())];
+            vec[vix++] = row[cix];
+        }
+
+        gb.rewind();
+
+        return vec;
+    };
+
+    auto gen_attributes = [&i_colnames, &gen_attribute](GroupBy & gb, const array_type & arr, const std::vector<std::string> & att_names) -> array_type
+    {
+        const varray_type att1 = gen_attribute(gb, arr, att_names.front());
+        array_type result({att1.size(), 1}, att1);
+
+        for (auto it = std::next(att_names.cbegin()); it != att_names.cend(); ++it)
+        {
+            const varray_type att = gen_attribute(gb, arr, *it);
+            result = num::add_column(result, att);
+        }
+        return result;
+    };
+
+    const std::vector<std::string> att_names{"PRODUCT_CLASS_ID1", "BRAND", "PRODUCT_SALES_UNIT", "PRODUCT_UNIT_OF_MEASURE"};
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    GroupBy gb_train(i_train_data);
+
+    array_type train_data = gen_attributes(gb_train, i_train_data, att_names);
+
+    std::vector<std::string> colnames;
+    std::copy(att_names.cbegin(), att_names.cend(), std::back_inserter(colnames));
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    GroupBy gb_test(i_test_data);
+
+    array_type test_data = gen_attributes(gb_test, i_test_data, att_names);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    const varray_type special_part = gen_attribute(gb_train, i_train_data, "SPECIAL_PART");
+    colnames.push_back("SPECIAL_PART");
+    train_data = num::add_column(train_data, special_part);
+
+    return std::make_tuple(colnames, train_data, test_data);
 }
 
 
@@ -395,6 +522,7 @@ ElectronicPartsClassification::classifyParts(
             )
         );
 
+    gen_features(colnames, i_train_data, i_test_data);
 
     return {};
 
