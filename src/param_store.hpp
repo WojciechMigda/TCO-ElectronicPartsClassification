@@ -36,6 +36,7 @@ const std::map<const std::string, const std::string> CURRENT
 {
     {"booster", "gbtree"},
     {"reg_alpha", "0"},
+    {"num_class", "3"},
     {"colsample_bytree", "0.5525129874711902"},
     {"silent", "1"},
     {"colsample_bylevel", "1"},
