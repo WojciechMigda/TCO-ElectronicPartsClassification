@@ -34,25 +34,28 @@ namespace params
 
 const std::map<const std::string, const std::string> CURRENT
 {
-    {"booster", "gbtree"},
-    {"reg_alpha", "0"},
-    {"num_class", "3"},
-    {"colsample_bytree", "0.5525129874711902"},
+    {"missing", "nan"},
+    {"seed", "0"},
     {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+//    {"objective", "rank:pairwise"},
+    {"objective", "multi:softprob"},
+    {"num_class", "3"},
+
+    {"n_estimators", "51"},
+    {"reg_alpha", "0"},
+    {"colsample_bytree", "0.5525129874711902"},
     {"colsample_bylevel", "1"},
     {"scale_pos_weight", "0.38570090801277784"},
     {"learning_rate", "0.045"},
-    {"missing", "nan"},
     {"max_delta_step", "0"},
     {"base_score", "0.5"},
-    {"n_estimators", "51"},
-    {"cache_opt", "0"},
     {"subsample", "0.7168114425646201"},
     {"reg_lambda", "1"},
-    {"seed", "0"},
     {"min_child_weight", "175"},
 
-    {"objective", "rank:pairwise"},
     {"max_depth", "6"},
     {"gamma", "1.676750571566339"}
 };
