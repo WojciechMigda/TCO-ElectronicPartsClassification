@@ -58,7 +58,7 @@ public:
     typedef std::pair<size_type, size_type> shape_type;
     typedef std::valarray<value_type> varray_type;
 
-    array2d(shape_type shape, value_type initializer);
+    array2d(shape_type shape = {0, 0}, value_type initializer = value_type{});
     array2d(shape_type shape, varray_type && varray);
     array2d(shape_type shape, const varray_type & varray);
     array2d(const array2d & other);
