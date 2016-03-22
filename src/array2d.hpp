@@ -391,7 +391,7 @@ loadtxt(
 
     for (size_type ridx{0}; ridx < NROWS; ++ridx)
     {
-        std::valarray<value_type> row(NROWS);
+        std::valarray<value_type> row(NCOLS);
         std::stringstream ss(txt[ridx + cfg.skip_header()]);
         std::string item;
 
