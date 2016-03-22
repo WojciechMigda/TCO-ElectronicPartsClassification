@@ -353,8 +353,8 @@ struct GroupBy
         }
         else
         {
-            const int prod_id = df[df.row(index)][0];
-            const char segment = df[df.row(index)][8];
+            const int prod_id = df[df.row(index)][0]; // TODO, hardcoded
+            const char segment = df[df.row(index)][8]; // TODO, hardcoded
 
             return {prod_id, segment};
         }
@@ -454,13 +454,30 @@ gen_features(
 }
 
 
+// custom argmax, breaks ties by selecting "Maybe"
+template<typename _Iterator>
+std::size_t argmax(_Iterator begin, _Iterator end)
+{
+    const std::size_t imax = std::distance(begin, std::max_element(begin, end));
+
+//    if ((*begin == *(begin + imax)) || (*(begin + 2) == *(begin + imax)))
+//    {
+//        return 1;
+//    }
+//    else
+    {
+        return imax;
+    }
+}
+
+
 std::vector<std::string>
 ElectronicPartsClassification::classifyParts(
     std::vector<std::string> & i_training,
     std::vector<std::string> & i_testing) const
 {
 
-    std::vector<std::string> colnames{"PRODUCT_NUMBER", "CUSTOMER_NUMBER", "TRANSACTION_DATE",
+    const std::vector<std::string> raw_colnames{"PRODUCT_NUMBER", "CUSTOMER_NUMBER", "TRANSACTION_DATE",
         "PRODUCT_PRICE", "GROSS_SALES", "REGION", "WAREHOUSE", "CUSTOMER_ZIP", "CUSTOMER_SEGMENT1",
         "CUSTOMER_SEGMENT2", "CUSTOMER_TYPE1", "CUSTOMER_TYPE2", "CUSTOMER_MANAGED_LEVEL",
         "CUSTOMER_ACCOUNT_TYPE", "CUSTOMER_FIRST_ORDER_DATE", "PRODUCT_CLASS_ID1",
@@ -473,35 +490,35 @@ ElectronicPartsClassification::classifyParts(
 
     const num::loadtxtCfg<real_type>::converters_type converters_train =
         {
-            {colidx(colnames, "TRANSACTION_DATE"), date_xlt},
-            {colidx(colnames, "CUSTOMER_SEGMENT1"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
-            {colidx(colnames, "CUSTOMER_TYPE2"), [](const char * str){return from_list_xlt({"A", "B", "C"}, str);}},
-            {colidx(colnames, "CUSTOMER_MANAGED_LEVEL"), [](const char * str){return from_list_xlt({"N", "L"}, str);}},
-            {colidx(colnames, "CUSTOMER_ACCOUNT_TYPE"), [](const char * str){return from_list_xlt({"ST", "DM"}, str);}},
-            {colidx(colnames, "CUSTOMER_FIRST_ORDER_DATE"), date_xlt},
-            {colidx(colnames, "BRAND"), [](const char * str){return from_list_xlt({"IN_HOUSE", "NOT_IN_HOUSE"}, str);}},
-            {colidx(colnames, "PRODUCT_SALES_UNIT"), [](const char * str){return from_list_xlt({"Y", "N"}, str);}},
-            {colidx(colnames, "PRODUCT_UNIT_OF_MEASURE"), [](const char * str){return from_list_xlt({"B", "LB", "EA"}, str);}},
-            {colidx(colnames, "ORDER_SOURCE"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
-            {colidx(colnames, "SPECIAL_PART"), [](const char * str){return from_list_xlt({"No", "Maybe", "Yes"}, str);}},
+            {colidx(raw_colnames, "TRANSACTION_DATE"), date_xlt},
+            {colidx(raw_colnames, "CUSTOMER_SEGMENT1"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_TYPE2"), [](const char * str){return from_list_xlt({"A", "B", "C"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_MANAGED_LEVEL"), [](const char * str){return from_list_xlt({"N", "L"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_ACCOUNT_TYPE"), [](const char * str){return from_list_xlt({"ST", "DM"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_FIRST_ORDER_DATE"), date_xlt},
+            {colidx(raw_colnames, "BRAND"), [](const char * str){return from_list_xlt({"IN_HOUSE", "NOT_IN_HOUSE"}, str);}},
+            {colidx(raw_colnames, "PRODUCT_SALES_UNIT"), [](const char * str){return from_list_xlt({"Y", "N"}, str);}},
+            {colidx(raw_colnames, "PRODUCT_UNIT_OF_MEASURE"), [](const char * str){return from_list_xlt({"B", "LB", "EA"}, str);}},
+            {colidx(raw_colnames, "ORDER_SOURCE"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
+            {colidx(raw_colnames, "SPECIAL_PART"), [](const char * str){return from_list_xlt({"No", "Maybe", "Yes"}, str);}},
         };
     const num::loadtxtCfg<real_type>::converters_type converters_test =
         {
-            {colidx(colnames, "TRANSACTION_DATE"), date_xlt},
-            {colidx(colnames, "CUSTOMER_SEGMENT1"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
-            {colidx(colnames, "CUSTOMER_TYPE2"), [](const char * str){return from_list_xlt({"A", "B", "C"}, str);}},
-            {colidx(colnames, "CUSTOMER_MANAGED_LEVEL"), [](const char * str){return from_list_xlt({"N", "L"}, str);}},
-            {colidx(colnames, "CUSTOMER_ACCOUNT_TYPE"), [](const char * str){return from_list_xlt({"ST", "DM"}, str);}},
-            {colidx(colnames, "CUSTOMER_FIRST_ORDER_DATE"), date_xlt},
-            {colidx(colnames, "BRAND"), [](const char * str){return from_list_xlt({"IN_HOUSE", "NOT_IN_HOUSE"}, str);}},
-            {colidx(colnames, "PRODUCT_SALES_UNIT"), [](const char * str){return from_list_xlt({"Y", "N"}, str);}},
-            {colidx(colnames, "PRODUCT_UNIT_OF_MEASURE"), [](const char * str){return from_list_xlt({"B", "LB", "EA"}, str);}},
-            {colidx(colnames, "ORDER_SOURCE"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
+            {colidx(raw_colnames, "TRANSACTION_DATE"), date_xlt},
+            {colidx(raw_colnames, "CUSTOMER_SEGMENT1"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_TYPE2"), [](const char * str){return from_list_xlt({"A", "B", "C"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_MANAGED_LEVEL"), [](const char * str){return from_list_xlt({"N", "L"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_ACCOUNT_TYPE"), [](const char * str){return from_list_xlt({"ST", "DM"}, str);}},
+            {colidx(raw_colnames, "CUSTOMER_FIRST_ORDER_DATE"), date_xlt},
+            {colidx(raw_colnames, "BRAND"), [](const char * str){return from_list_xlt({"IN_HOUSE", "NOT_IN_HOUSE"}, str);}},
+            {colidx(raw_colnames, "PRODUCT_SALES_UNIT"), [](const char * str){return from_list_xlt({"Y", "N"}, str);}},
+            {colidx(raw_colnames, "PRODUCT_UNIT_OF_MEASURE"), [](const char * str){return from_list_xlt({"B", "LB", "EA"}, str);}},
+            {colidx(raw_colnames, "ORDER_SOURCE"), [](const char * str){return from_list_xlt({"A", "B"}, str);}},
         };
 
     ////////////////////////////////////////////////////////////////////////////
 
-    array_type i_train_data =
+    const array_type i_train_data =
         num::loadtxt(
             std::move(i_training),
             std::move(
@@ -511,8 +528,7 @@ ElectronicPartsClassification::classifyParts(
             )
         );
 
-    const
-    array_type i_test_data =
+    const array_type i_test_data =
         num::loadtxt(
             std::move(i_testing),
             std::move(
@@ -522,70 +538,39 @@ ElectronicPartsClassification::classifyParts(
             )
         );
 
-    gen_features(colnames, i_train_data, i_test_data);
+    std::vector<std::string> colnames;
+    array_type train_data;
+    array_type test_data;
 
-    return {};
+    std::tie(colnames, train_data, test_data) = gen_features(raw_colnames, i_train_data, i_test_data);
 
-    // retrieve response vector
-    const array_type::varray_type train_y_valarr = i_train_data[i_train_data.column(-1)];
+//    std::cerr << train_data.shape() << test_data.shape() << std::endl;
+//    std::copy(colnames.cbegin(), colnames.cend(), std::ostream_iterator<std::string>(std::cerr, "\n"));
+
+    assert(train_data.shape().second == test_data.shape().second + 1);
+
+    const array_type::varray_type train_y_valarr = train_data[train_data.column(colidx(colnames, "SPECIAL_PART"))];
     const std::vector<float> train_y(std::begin(train_y_valarr), std::end(train_y_valarr));
 
     std::cerr << "train_y size: " << train_y.size() << std::endl;
 
-
-    // drop the CONSUMER_ID column
-    array_type test_data({i_test_data.shape().first, i_test_data.shape().second - 1}, i_test_data[i_test_data.columns(1, -1)]);
-    // drop the CONSUMER_ID and DEMO_X columns
-    array_type train_data({i_train_data.shape().first, i_train_data.shape().second - 2}, i_train_data[i_train_data.columns(1, -2)]);
-
-    colnames.erase(colnames.end() - 1);
-    colnames.erase(colnames.begin());
+    train_data = num::del_column(train_data, colidx(colnames, "SPECIAL_PART"));
+    colnames.erase(std::find(colnames.cbegin(), colnames.cend(), "SPECIAL_PART"));
     assert(colnames.size() == train_data.shape().second);
 
     std::cerr << "train_data shape: " << train_data.shape() << std::endl;
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
-    {
-        array_type full_data({train_data.shape().first + test_data.shape().first, train_data.shape().second}, 0);
-        full_data[full_data.rows(0, train_data.shape().first - 1)] = train_data[train_data.rows(0, -1)];
-        full_data[full_data.rows(train_data.shape().first, -1)] = test_data[test_data.rows(0, -1)];
-
-        const auto & c_full_data(full_data);
-
-        full_data = one_hot(full_data, colnames,
-            {
-                colidx(colnames, "GENDER"),
-                colidx(colnames, "REGISTRATION_ROUTE"),
-                colidx(colnames, "REGISTRATION_CONTEXT"),
-                colidx(colnames, "MIGRATED_USER_TYPE"),
-                colidx(colnames, "PLATFORM_CENTRE"),
-                colidx(colnames, "TOD_CENTRE"),
-                colidx(colnames, "CONTENT_CENTRE"),
-            });
-
-        assert(colnames.size() == full_data.shape().second);
-
-        train_data = array_type(
-            {train_data.shape().first, full_data.shape().second},
-            c_full_data[full_data.rows(0, train_data.shape().first - 1)]);
-        test_data = array_type(
-            {test_data.shape().first, full_data.shape().second},
-            c_full_data[full_data.rows(train_data.shape().first, - 1)]);
-    }
-
-    std::cerr << "OneHot/FE train_data shape: " << train_data.shape() << std::endl;
-    std::cerr << "OneHot/FE test_data shape: " << test_data.shape() << std::endl;
-
 
     constexpr int   TIME_MARGIN{60};
-    const int       MAX_TIMESTAMP = time0 + 600 - TIME_MARGIN;
+    constexpr int   MAX_TIME{600};
+    const int       MAX_TIMESTAMP = time0 + MAX_TIME - TIME_MARGIN;
 
     const std::map<const std::string, const std::string> * PARAMS_SET[] = {&params::CURRENT};
 
 
     std::cerr << std::endl << "Training " << std::distance(std::begin(PARAMS_SET), std::end(PARAMS_SET)) << " estimator(s)" << std::endl;
-    std::cerr << "Total time limit: " << 600 << " secs" << std::endl;
-
+    std::cerr << "Total time limit: " << MAX_TIME << " secs" << std::endl;
 
     // collection of probabilities predicted by each estimator
     std::vector<std::vector<float>> y_hat_proba_set;
@@ -619,44 +604,80 @@ ElectronicPartsClassification::classifyParts(
 
         auto proba = XGB::predict(booster.get(), test_data);
 
-        if (y_hat_proba_set.size() == 0)
-        {
-            // double first estimator's score
-//            y_hat_proba_set.push_back(proba);
-        }
         y_hat_proba_set.push_back(proba);
 
         std::cerr << "Elapsed time: " << timestamp() - time0 << std::endl;
     }
 
     // array of propabilities accumulated from completed estimators
-    std::vector<float> y_hat_proba_cumm(test_data.shape().first, 0.);
+    std::vector<float> y_hat_proba_cumm(y_hat_proba_set.front().size(), 0.);
 
-    for (int idx{0}; idx < y_hat_proba_set.size(); ++idx)
+    for (std::size_t idx{0}; idx < y_hat_proba_set.size(); ++idx)
     {
         std::transform(y_hat_proba_set[idx].cbegin(), y_hat_proba_set[idx].cend(), y_hat_proba_cumm.begin(),
             y_hat_proba_cumm.begin(),
             [](const float x, const float a)
             {
-//                return a + (x > 0.5);
                 return a + x;
             });
     }
 
+    const std::size_t num_class = std::stoi(PARAMS_SET[0]->at("num_class"));
+
     // quantized prediction
-    std::vector<int> y_hat(test_data.shape().first);
+    std::vector<std::size_t> y_hat(test_data.shape().first);
 
-    std::transform(y_hat_proba_cumm.cbegin(), y_hat_proba_cumm.cend(), y_hat.begin(),
-        [&y_hat_proba_set](const float what)
+    for (std::size_t ix{0}; ix < y_hat.size(); ++ix)
+    {
+        y_hat[ix] = argmax(y_hat_proba_cumm.cbegin() + num_class * ix, std::next(y_hat_proba_cumm.cbegin()) + num_class * ix);
+    }
+
+
+    const std::string yes_no_maybe[] = {"No", "Maybe", "Yes"};
+    std::map<int, std::pair<std::string, std::string>> responses;
+    GroupBy gb_test(i_test_data);
+    int ix{0};
+    for (auto group = gb_test.yield(); group.size() != 0; group = gb_test.yield())
+    {
+        const std::valarray<real_type> row = i_test_data[i_test_data.row(group.front())];
+        const int prod_id = row[colidx(raw_colnames, "PRODUCT_NUMBER")];
+        const char segment = row[colidx(raw_colnames, "CUSTOMER_SEGMENT1")];
+        const auto response = y_hat[ix++];
+
+        if (responses.count(prod_id))
         {
-            const float mean = what / y_hat_proba_set.size();
+            if (segment == 0)
+            {
+                responses[prod_id].first = yes_no_maybe[response];
+            }
+            else
+            {
+                responses[prod_id].second = yes_no_maybe[response];
+            }
+        }
+        else
+        {
+            if (segment == 0)
+            {
+                responses[prod_id] = {yes_no_maybe[response], "NA"};
+            }
+            else
+            {
+                responses[prod_id] = {"NA", yes_no_maybe[response]};
+            }
+        }
+    }
 
-            return mean > 0.50;
+    std::vector<std::string> str_y_hat;
+    std::transform(responses.cbegin(), responses.cend(), std::back_inserter(str_y_hat),
+        [](const std::pair<int, std::pair<std::string, std::string>> & kv)
+        {
+            return std::to_string(kv.first) + ',' + kv.second.first + ',' + kv.second.second;
         }
     );
 
-//    return y_hat;
-    return {};
+    return str_y_hat;
+//    return {};
 }
 
 #endif /* ELECTRONICPARTS_HPP_ */

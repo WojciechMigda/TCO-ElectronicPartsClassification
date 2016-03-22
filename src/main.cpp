@@ -372,7 +372,6 @@ int main(int argc, char **argv)
     const ElectronicPartsClassification solver;
 
     std::vector<double> CVscores;
-    CVscores.reserve(descriptors.size());
 
 
     LOOTestIndices test_indices_gen(vcsv);
@@ -409,16 +408,16 @@ int main(int argc, char **argv)
 
 //        const std::vector<std::string> yhat = test_y;
         const auto yhat = solver.classifyParts(train_data, test_data);
+//        std::cerr << yhat.front() << " / " << test_y.front() << std::endl;
 
         // score
         const double fold_score = avnet_score(yhat, test_y);
         CVscores.push_back(fold_score);
-
+        std::cerr << "fold score: " << fold_score << std::endl;
     }
 
-
-    const double final_score = 1e6 * (1. - (std::accumulate(CVscores.cbegin(), CVscores.cend(), 0) / CVscores.size()));
-    std::cerr << "  mean score: " << final_score << std::endl;
+    const double final_score = 1e6 * (1. - std::accumulate(CVscores.cbegin(), CVscores.cend(), 0.) / CVscores.size());
+    std::cerr << "  mean score: " << std::fixed << final_score << std::endl;
 
     return 0;
 }
