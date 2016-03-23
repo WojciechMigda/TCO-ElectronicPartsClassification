@@ -473,11 +473,11 @@ int main(int argc, char **argv)
         // score
         const double fold_score = avnet_score(yhat, test_y);
         CVscores.push_back(fold_score);
-        std::cerr << "fold score: " << std::fixed << fold_score << std::endl;
+        std::cerr << "fold score: " << std::fixed << fold_score << std::endl << std::endl;
     }
 
     const double final_score = std::accumulate(CVscores.cbegin(), CVscores.cend(), 0.) / CVscores.size();
-    std::cerr << "  mean score: " << std::fixed << final_score << std::endl;
+    std::cerr << "  mean score: " << std::fixed << final_score << '(' << CVscores.size() << " folds)" << std::endl;
 
     return 0;
 }

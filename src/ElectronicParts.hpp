@@ -397,6 +397,9 @@ gen_features(
 {
     typedef std::valarray<real_type> varray_type;
 
+    /*
+     * generate feature vector across all groups for a single attribute column
+     */
     auto gen_attribute = [&i_colnames](GroupBy & gb, const array_type & arr, const std::string & colname) -> varray_type
     {
         const std::size_t cix = colidx(i_colnames, colname);
@@ -427,6 +430,7 @@ gen_features(
         return result;
     };
 
+
     const std::vector<std::string> att_names{"PRODUCT_CLASS_ID1", "BRAND", "PRODUCT_SALES_UNIT", "PRODUCT_UNIT_OF_MEASURE"};
 
     ////////////////////////////////////////////////////////////////////////////
@@ -445,6 +449,73 @@ gen_features(
     array_type test_data = gen_attributes(gb_test, i_test_data, att_names);
 
     ////////////////////////////////////////////////////////////////////////////
+
+    auto gen_distribution = [&i_colnames](GroupBy & gb, const array_type & arr, const std::string & colname, const int dict_sz, const int offset) -> array_type
+    {
+        const std::size_t cix = colidx(i_colnames, colname);
+
+        array_type result({gb.size(), dict_sz}, 0.);
+
+        std::size_t gbix{0};
+        for (auto group = gb.yield(); group.size() != 0; group = gb.yield())
+        {
+            varray_type dict(0., dict_sz);
+
+            for (const auto rix : group)
+            {
+                const int item = arr[arr.row(rix)][cix] - offset;
+                assert(0 <= item && item < dict_sz);
+
+                ++dict[item];
+            }
+
+            dict /= dict.sum();
+            result[result.row(gbix++)] = dict;
+        }
+
+        gb.rewind();
+
+        return result;
+    };
+
+    const std::tuple<std::string, int, int> dist_db[] =
+        {
+            std::make_tuple("PRICE_METHOD", 5, 1),
+            std::make_tuple("ORDER_SOURCE", 2, 0),
+            std::make_tuple("CUSTOMER_ACCOUNT_TYPE", 2, 0),
+            std::make_tuple("CUSTOMER_MANAGED_LEVEL", 2, 0),
+            std::make_tuple("CUSTOMER_TYPE2", 3, 0),
+            std::make_tuple("CUSTOMER_TYPE1", 3, 1),
+        };
+
+    for (const auto & descriptor : dist_db)
+    {
+        const auto dist = gen_distribution(gb_train, i_train_data,
+            std::get<0>(descriptor),
+            std::get<1>(descriptor),
+            std::get<2>(descriptor));
+        train_data = num::add_columns(train_data, dist);
+    }
+
+    for (const auto & descriptor : dist_db)
+    {
+        const auto dist = gen_distribution(gb_test, i_test_data,
+            std::get<0>(descriptor),
+            std::get<1>(descriptor),
+            std::get<2>(descriptor));
+        test_data = num::add_columns(test_data, dist);
+    }
+
+    for (const auto & descriptor : dist_db)
+    {
+        for (int ix{0}; ix < std::get<1>(descriptor); ++ix)
+        {
+            colnames.push_back(std::get<0>(descriptor) + '_' + std::to_string(ix + 1));
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
 
     const varray_type special_part = gen_attribute(gb_train, i_train_data, "SPECIAL_PART");
     colnames.push_back("SPECIAL_PART");
