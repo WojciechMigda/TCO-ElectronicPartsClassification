@@ -477,7 +477,7 @@ int main(int argc, char **argv)
     }
 
     const double final_score = std::accumulate(CVscores.cbegin(), CVscores.cend(), 0.) / CVscores.size();
-    std::cerr << "  mean score: " << std::fixed << final_score << '(' << CVscores.size() << " folds)" << std::endl;
+    std::cerr << "  mean score: " << std::fixed << final_score << " (" << CVscores.size() << " folds)" << std::endl;
 
     return 0;
 }

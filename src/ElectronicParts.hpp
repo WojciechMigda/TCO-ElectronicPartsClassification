@@ -516,6 +516,83 @@ gen_features(
 
     ////////////////////////////////////////////////////////////////////////////
 
+    auto min_max_std = [&i_colnames](GroupBy & gb, const array_type & arr) -> array_type
+    {
+        const std::size_t pcost1_cix = colidx(i_colnames, "PRODUCT_COST1");
+        const std::size_t boxes_cix = colidx(i_colnames, "TOTAL_BOXES_SOLD");
+        const std::size_t price_cix = colidx(i_colnames, "PRODUCT_PRICE");
+        const std::size_t gross_cix = colidx(i_colnames, "GROSS_SALES");
+        const std::size_t unit_cix = colidx(i_colnames, "PRODUCT_UNIT_OF_MEASURE");
+
+        constexpr std::size_t NFEAT = 3 + 3 + 4;
+
+        array_type result({gb.size(), NFEAT}, 0.);
+
+        std::size_t gbix{0};
+        for (auto group = gb.yield(); group.size() != 0; group = gb.yield())
+        {
+            varray_type row(0., NFEAT);
+            std::size_t rix{0};
+
+            const std::valarray<std::size_t> indirect(group.data(), group.size());
+
+            const varray_type boxes_sold = arr[arr.column(boxes_cix)][indirect];
+            const varray_type signed_pcost = arr[arr.column(pcost1_cix)][indirect];
+            const varray_type pcost1 = std::abs(signed_pcost);
+            const varray_type pcost1_per_item = pcost1 / boxes_sold;
+            const real_type pcost1_mean = num::mean(pcost1_per_item);
+            const real_type pcost1_std = num::std(pcost1_per_item);
+
+            row[rix++] = pcost1_per_item.min() / pcost1_mean;
+            row[rix++] = pcost1_per_item.max() / pcost1_mean;
+            row[rix++] = pcost1_std / pcost1_mean;
+
+            const varray_type signed_price = arr[arr.column(price_cix)][indirect];
+            const varray_type price = std::abs(signed_price);
+            const real_type price_mean = num::mean(price);
+            const real_type price_std = num::std(price);
+
+            row[rix++] = price.min() / price_mean;
+            row[rix++] = price.max() / price_mean;
+            row[rix++] = price_std / price_mean;
+
+            const varray_type signed_gross_sales = arr[arr.column(gross_cix)][indirect];
+            const varray_type commision = arr[arr.row(group.front())][unit_cix] < 2 ?
+                (varray_type)(price / pcost1_per_item) :
+                (varray_type)(std::abs(signed_gross_sales) / pcost1);
+            const real_type commision_mean = num::mean(commision);
+            const real_type commision_std = num::std(commision);
+
+            row[rix++] = commision_mean;
+            row[rix++] = commision.min() / commision_mean;
+            row[rix++] = commision.max() / commision_mean;
+            row[rix++] = commision_std / commision_mean;
+
+            result[result.row(gbix)] = row;
+        }
+
+        gb.rewind();
+
+        return result;
+    };
+
+    {
+        const auto stat = min_max_std(gb_train, i_train_data);
+        train_data = num::add_columns(train_data, stat);
+    }
+    {
+        const auto stat = min_max_std(gb_test, i_test_data);
+        test_data = num::add_columns(test_data, stat);
+    }
+
+    const std::string stat_colnames[] = {
+        "PCOST1_REL_MIN", "PCOST1_REL_MAX", "PCOST1_REL_STD",
+        "PRICE_REL_MIN", "PRICE_REL_MAX", "PRICE_REL_STD",
+        "COMMN_MEAN", "COMMN_REL_MIN", "COMMN_REL_MAX", "COMMN_REL_STD"};
+    colnames.insert(colnames.end(), std::begin(stat_colnames), std::end(stat_colnames));
+
+    ////////////////////////////////////////////////////////////////////////////
+
 
     const varray_type special_part = gen_attribute(gb_train, i_train_data, "SPECIAL_PART");
     colnames.push_back("SPECIAL_PART");
@@ -700,7 +777,7 @@ ElectronicPartsClassification::classifyParts(
 
     for (std::size_t ix{0}; ix < y_hat.size(); ++ix)
     {
-        y_hat[ix] = argmax(y_hat_proba_cumm.cbegin() + num_class * ix, std::next(y_hat_proba_cumm.cbegin()) + num_class * ix);
+        y_hat[ix] = argmax(std::next(y_hat_proba_cumm.cbegin(), num_class * ix), std::next(y_hat_proba_cumm.cbegin(), num_class * (ix + 1)));
     }
 
 

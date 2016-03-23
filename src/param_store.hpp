@@ -44,20 +44,20 @@ const std::map<const std::string, const std::string> CURRENT
     {"objective", "multi:softprob"},
     {"num_class", "3"},
 
-    {"n_estimators", "51"},
+    {"n_estimators", "20"},
     {"reg_alpha", "0"},
-    {"colsample_bytree", "0.5525129874711902"},
+    {"colsample_bytree", "0.6142072845246039"},
     {"colsample_bylevel", "1"},
-    {"scale_pos_weight", "0.38570090801277784"},
+    {"scale_pos_weight", "0.6362125677898036"},
     {"learning_rate", "0.045"},
     {"max_delta_step", "0"},
     {"base_score", "0.5"},
-    {"subsample", "0.7168114425646201"},
+    {"subsample", "0.9960842849583936"},
     {"reg_lambda", "1"},
-    {"min_child_weight", "175"},
+    {"min_child_weight", "2"},
 
-    {"max_depth", "6"},
-    {"gamma", "1.676750571566339"}
+    {"max_depth", "10"},
+    //{"gamma", "1.676750571566339"}
 };
 
 
