@@ -236,7 +236,7 @@ double avnet_score(const std::vector<std::string> & y_hat, const std::vector<std
         score += score_matrix[kv.second.second][kv.second.first];
     }
 
-    return score;
+    return (1. - score / truth_pred.size()) * 1e6;
 }
 
 
@@ -290,6 +290,65 @@ struct LOOTestIndices
         {
             const auto & result = m_current->second;
             ++m_current;
+            return result;
+        }
+    }
+
+    std::map<key_type, std::vector<std::size_t>> m_groups;
+    std::map<key_type, std::vector<std::size_t>>::const_iterator m_current;
+};
+
+
+struct StratifiedLOOTestIndices
+{
+    typedef int key_type;
+
+    StratifiedLOOTestIndices(const std::vector<std::string> & df)
+    {
+        for (std::size_t ix{0}; ix < df.size(); ++ix)
+        {
+            const key_type k = key(df, ix);
+
+            if (m_groups.count(k))
+            {
+                m_groups.at(k).push_back(ix);
+            }
+            else
+            {
+                m_groups[k] = {ix};
+            }
+        }
+
+        m_current = m_groups.begin();
+    }
+
+    key_type key(const std::vector<std::string> & df, const std::size_t index) const
+    {
+        if (df.size() == 0)
+        {
+            return {0};
+        }
+        else
+        {
+            int prod_id = -1;
+
+            sscanf(df[index].c_str(), "%d", &prod_id);
+
+            return prod_id;
+        }
+    }
+
+    std::vector<std::size_t> yield()
+    {
+        if (m_current == m_groups.cend())
+        {
+            return {};
+        }
+        else
+        {
+            const auto & result = m_current->second;
+            ++m_current;
+
             return result;
         }
     }
@@ -374,7 +433,8 @@ int main(int argc, char **argv)
     std::vector<double> CVscores;
 
 
-    LOOTestIndices test_indices_gen(vcsv);
+//    LOOTestIndices test_indices_gen(vcsv);
+    StratifiedLOOTestIndices test_indices_gen(vcsv);
 
     for (auto test_indices_v = test_indices_gen.yield(); test_indices_v.size() != 0; test_indices_v = test_indices_gen.yield())
     {
@@ -413,10 +473,10 @@ int main(int argc, char **argv)
         // score
         const double fold_score = avnet_score(yhat, test_y);
         CVscores.push_back(fold_score);
-        std::cerr << "fold score: " << fold_score << std::endl;
+        std::cerr << "fold score: " << std::fixed << fold_score << std::endl;
     }
 
-    const double final_score = 1e6 * (1. - std::accumulate(CVscores.cbegin(), CVscores.cend(), 0.) / CVscores.size());
+    const double final_score = std::accumulate(CVscores.cbegin(), CVscores.cend(), 0.) / CVscores.size();
     std::cerr << "  mean score: " << std::fixed << final_score << std::endl;
 
     return 0;
