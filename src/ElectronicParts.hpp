@@ -602,20 +602,93 @@ gen_features(
 }
 
 
-// custom argmax, breaks ties by selecting "Maybe"
 template<typename _Iterator>
 std::size_t argmax(_Iterator begin, _Iterator end)
 {
     const std::size_t imax = std::distance(begin, std::max_element(begin, end));
 
-//    if ((*begin == *(begin + imax)) || (*(begin + 2) == *(begin + imax)))
-//    {
-//        return 1;
-//    }
-//    else
+    return imax;
+}
+
+
+template<typename Iterator>
+std::vector<std::size_t>
+run_binary_estimators(
+    const Iterator begin,
+    const Iterator end,
+    const long int time0,
+    const array_type & train_data,
+    const std::vector<float> & train_y,
+    const array_type & test_data)
+{
+    constexpr int   TIME_MARGIN{60};
+    constexpr int   MAX_TIME{600};
+    const int       MAX_TIMESTAMP = time0 + MAX_TIME - TIME_MARGIN;
+
+    std::cerr << std::endl << "Training " << std::distance(begin, end) << " estimator(s)" << std::endl;
+    std::cerr << "Total time limit: " << MAX_TIME << " secs" << std::endl;
+
+    // collection of probabilities predicted by each estimator
+    std::vector<std::vector<float>> y_hat_proba_set;
+
+    for (auto it = begin; it != end; ++it)
     {
-        return imax;
+        const auto & PARAMS_p = *it;
+
+        const int MAX_ITER = std::stoi(PARAMS_p->at("n_estimators"));
+        int iter{0};
+
+        auto booster = XGB::fit(train_data, train_y, *PARAMS_p,
+            [&iter, MAX_ITER, MAX_TIMESTAMP]() -> bool
+            {
+                const bool running = (iter < MAX_ITER) && (timestamp() < MAX_TIMESTAMP);
+                ++iter;
+                return running == false;
+            }
+        );
+
+        if (iter <= MAX_ITER)
+        {
+            // time exceeded
+            std::cerr << "Exceeded allocated time limit after iteration " << iter << " of " << MAX_ITER << " for estimator [" << y_hat_proba_set.size() + 1 << "]" << std::endl;
+
+            // but we'll make the prediction anyway if it's our first estimator :)
+            if (y_hat_proba_set.size() == 0)
+            {
+                y_hat_proba_set.push_back(XGB::predict(booster.get(), test_data));
+            }
+            break;
+        }
+
+        auto proba = XGB::predict(booster.get(), test_data);
+
+        y_hat_proba_set.push_back(proba);
+
+        std::cerr << "Elapsed time: " << timestamp() - time0 << std::endl;
     }
+
+    // array of propabilities accumulated from completed estimators
+    std::vector<float> y_hat_proba_cumm(y_hat_proba_set.front().size(), 0.);
+
+    for (std::size_t idx{0}; idx < y_hat_proba_set.size(); ++idx)
+    {
+        std::transform(y_hat_proba_set[idx].cbegin(), y_hat_proba_set[idx].cend(), y_hat_proba_cumm.begin(),
+            y_hat_proba_cumm.begin(),
+            [](const float x, const float a)
+            {
+                return a + x;
+            });
+    }
+
+    // quantized prediction
+    std::vector<std::size_t> y_hat(test_data.shape().first);
+
+    for (std::size_t ix{0}; ix < y_hat.size(); ++ix)
+    {
+        y_hat[ix] = y_hat_proba_cumm[ix] > 0.5;
+    }
+
+    return y_hat;
 }
 
 
@@ -703,83 +776,60 @@ ElectronicPartsClassification::classifyParts(
     std::cerr << "train_y size: " << train_y.size() << std::endl;
 
     train_data = num::del_column(train_data, colidx(colnames, "SPECIAL_PART"));
-    colnames.erase(std::find(colnames.cbegin(), colnames.cend(), "SPECIAL_PART"));
+    colnames.erase(std::find(colnames.begin(), colnames.end(), "SPECIAL_PART"));
     assert(colnames.size() == train_data.shape().second);
 
     std::cerr << "train_data shape: " << train_data.shape() << std::endl;
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
 
-    constexpr int   TIME_MARGIN{60};
-    constexpr int   MAX_TIME{600};
-    const int       MAX_TIMESTAMP = time0 + MAX_TIME - TIME_MARGIN;
-
-    const std::map<const std::string, const std::string> * PARAMS_SET[] = {&params::CURRENT};
-
-
-    std::cerr << std::endl << "Training " << std::distance(std::begin(PARAMS_SET), std::end(PARAMS_SET)) << " estimator(s)" << std::endl;
-    std::cerr << "Total time limit: " << MAX_TIME << " secs" << std::endl;
-
-    // collection of probabilities predicted by each estimator
-    std::vector<std::vector<float>> y_hat_proba_set;
-
-    for (const auto & PARAMS_p : PARAMS_SET)
-    {
-        const int MAX_ITER = std::stoi(PARAMS_p->at("n_estimators"));
-        int iter{0};
-
-        auto booster = XGB::fit(train_data, train_y, *PARAMS_p,
-            [&iter, MAX_ITER, MAX_TIMESTAMP]() -> bool
-            {
-                const bool running = (iter < MAX_ITER) && (timestamp() < MAX_TIMESTAMP);
-                ++iter;
-                return running == false;
-            }
-        );
-
-        if (iter <= MAX_ITER)
+    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::CURRENT};
+    std::vector<float> train_y__no;
+    std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__no),
+        [](const float what)
         {
-            // time exceeded
-            std::cerr << "Exceeded allocated time limit after iteration " << iter << " of " << MAX_ITER << " for estimator [" << y_hat_proba_set.size() + 1 << "]" << std::endl;
-
-            // but we'll make the prediction anyway if it's our first estimator :)
-            if (y_hat_proba_set.size() == 0)
-            {
-                y_hat_proba_set.push_back(XGB::predict(booster.get(), test_data));
-            }
-            break;
+            return what >= 0.5 ? 1. : 0.;
         }
+    );
 
-        auto proba = XGB::predict(booster.get(), test_data);
+    const auto y_hat_no = run_binary_estimators(
+        std::begin(PARAMS_SET__no), std::end(PARAMS_SET__no),
+        time0, train_data, train_y__no, test_data);
 
-        y_hat_proba_set.push_back(proba);
+    const std::map<const std::string, const std::string> * PARAMS_SET__yes[] = {&params::yes::CURRENT};
+    std::vector<float> train_y__yes;
+    std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__yes),
+        [](const float what)
+        {
+            return what >= 1.5 ? 1. : 0.;
+        }
+    );
 
-        std::cerr << "Elapsed time: " << timestamp() - time0 << std::endl;
-    }
+    const auto y_hat_yes = run_binary_estimators(
+        std::begin(PARAMS_SET__yes), std::end(PARAMS_SET__yes),
+        time0, train_data, train_y__yes, test_data);
 
-    // array of propabilities accumulated from completed estimators
-    std::vector<float> y_hat_proba_cumm(y_hat_proba_set.front().size(), 0.);
 
-    for (std::size_t idx{0}; idx < y_hat_proba_set.size(); ++idx)
-    {
-        std::transform(y_hat_proba_set[idx].cbegin(), y_hat_proba_set[idx].cend(), y_hat_proba_cumm.begin(),
-            y_hat_proba_cumm.begin(),
-            [](const float x, const float a)
+    ////////////////////////////////////////////////////////////////////////////
+
+    std::vector<std::size_t> y_hat;
+    std::transform(y_hat_no.cbegin(), y_hat_no.cend(), y_hat_yes.cbegin(), std::back_inserter(y_hat),
+        [](const float no, const float yes)
+        {
+            if (no < 0.5)
             {
-                return a + x;
-            });
-    }
-
-    const std::size_t num_class = std::stoi(PARAMS_SET[0]->at("num_class"));
-
-    // quantized prediction
-    std::vector<std::size_t> y_hat(test_data.shape().first);
-
-    for (std::size_t ix{0}; ix < y_hat.size(); ++ix)
-    {
-        y_hat[ix] = argmax(std::next(y_hat_proba_cumm.cbegin(), num_class * ix), std::next(y_hat_proba_cumm.cbegin(), num_class * (ix + 1)));
-    }
-
+                return 0.;
+            }
+            else if (yes > 0.5)
+            {
+                return 2.;
+            }
+            else
+            {
+                return 1.;
+            }
+        }
+    );
 
     const std::string yes_no_maybe[] = {"No", "Maybe", "Yes"};
     std::map<int, std::pair<std::string, std::string>> responses;
@@ -825,7 +875,6 @@ ElectronicPartsClassification::classifyParts(
     );
 
     return str_y_hat;
-//    return {};
 }
 
 #endif /* ELECTRONICPARTS_HPP_ */
