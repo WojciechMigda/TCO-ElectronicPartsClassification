@@ -783,7 +783,7 @@ ElectronicPartsClassification::classifyParts(
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
 
-    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::CURRENT};
+    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov29};
     std::vector<float> train_y__no;
     std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__no),
         [](const float what)
@@ -796,7 +796,7 @@ ElectronicPartsClassification::classifyParts(
         std::begin(PARAMS_SET__no), std::end(PARAMS_SET__no),
         time0, train_data, train_y__no, test_data);
 
-    const std::map<const std::string, const std::string> * PARAMS_SET__yes[] = {&params::yes::CURRENT};
+    const std::map<const std::string, const std::string> * PARAMS_SET__yes[] = {&params::yes::sub01};
     std::vector<float> train_y__yes;
     std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__yes),
         [](const float what)
@@ -812,6 +812,7 @@ ElectronicPartsClassification::classifyParts(
 
     ////////////////////////////////////////////////////////////////////////////
 
+//    std::vector<std::size_t> y_hat(y_hat_no);
     std::vector<std::size_t> y_hat;
     std::transform(y_hat_no.cbegin(), y_hat_no.cend(), y_hat_yes.cbegin(), std::back_inserter(y_hat),
         [](const float no, const float yes)
