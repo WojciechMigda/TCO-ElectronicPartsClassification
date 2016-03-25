@@ -783,7 +783,7 @@ ElectronicPartsClassification::classifyParts(
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
 
-    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov29};
+    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov21};
     std::vector<float> train_y__no;
     std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__no),
         [](const float what)
@@ -796,41 +796,41 @@ ElectronicPartsClassification::classifyParts(
         std::begin(PARAMS_SET__no), std::end(PARAMS_SET__no),
         time0, train_data, train_y__no, test_data);
 
-    const std::map<const std::string, const std::string> * PARAMS_SET__yes[] = {&params::yes::sub01};
-    std::vector<float> train_y__yes;
-    std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__yes),
-        [](const float what)
-        {
-            return what >= 1.5 ? 1. : 0.;
-        }
-    );
-
-    const auto y_hat_yes = run_binary_estimators(
-        std::begin(PARAMS_SET__yes), std::end(PARAMS_SET__yes),
-        time0, train_data, train_y__yes, test_data);
+//    const std::map<const std::string, const std::string> * PARAMS_SET__yes[] = {&params::yes::sub01};
+//    std::vector<float> train_y__yes;
+//    std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__yes),
+//        [](const float what)
+//        {
+//            return what >= 1.5 ? 1. : 0.;
+//        }
+//    );
+//
+//    const auto y_hat_yes = run_binary_estimators(
+//        std::begin(PARAMS_SET__yes), std::end(PARAMS_SET__yes),
+//        time0, train_data, train_y__yes, test_data);
 
 
     ////////////////////////////////////////////////////////////////////////////
 
-//    std::vector<std::size_t> y_hat(y_hat_no);
-    std::vector<std::size_t> y_hat;
-    std::transform(y_hat_no.cbegin(), y_hat_no.cend(), y_hat_yes.cbegin(), std::back_inserter(y_hat),
-        [](const float no, const float yes)
-        {
-            if (no < 0.5)
-            {
-                return 0.;
-            }
-            else if (yes > 0.5)
-            {
-                return 2.;
-            }
-            else
-            {
-                return 1.;
-            }
-        }
-    );
+    std::vector<std::size_t> y_hat(y_hat_no);
+//    std::vector<std::size_t> y_hat;
+//    std::transform(y_hat_no.cbegin(), y_hat_no.cend(), y_hat_yes.cbegin(), std::back_inserter(y_hat),
+//        [](const float no, const float yes)
+//        {
+//            if (no < 0.5)
+//            {
+//                return 0.;
+//            }
+//            else if (yes > 0.5)
+//            {
+//                return 2.;
+//            }
+//            else
+//            {
+//                return 1.;
+//            }
+//        }
+//    );
 
     const std::string yes_no_maybe[] = {"No", "Maybe", "Yes"};
     std::map<int, std::pair<std::string, std::string>> responses;

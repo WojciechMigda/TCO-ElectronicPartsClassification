@@ -75,6 +75,420 @@ const std::map<const std::string, const std::string> sub01
 namespace no
 {
 
+// zz_real01_no_logitraw.log
+//
+//best score: 963736.26374  best params: {'colsample_bytree': 0.32628857077959666, 'scale_pos_weight': 0.9061773692604194, 'min_child_weight': 1, 'n_estimators': 29, 'subsample': 0.9902699111496531, 'objective': 'binary:logitraw', 'max_depth': 17}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3278242420127301, 'scale_pos_weight': 0.9272129284699432, 'min_child_weight': 1, 'n_estimators': 27, 'subsample': 0.9909085285505224, 'objective': 'binary:logitraw', 'max_depth': 19}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3497790246913951, 'scale_pos_weight': 0.9019889905915804, 'min_child_weight': 1, 'n_estimators': 29, 'subsample': 0.9913474974403877, 'objective': 'binary:logitraw', 'max_depth': 22}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.35159830543006204, 'scale_pos_weight': 0.9175728221412991, 'min_child_weight': 2, 'n_estimators': 26, 'subsample': 0.9954251462161149, 'objective': 'binary:logitraw', 'max_depth': 21}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.353837638648168, 'scale_pos_weight': 0.8822933201872466, 'min_child_weight': 2, 'n_estimators': 28, 'subsample': 0.9993231720077536, 'objective': 'binary:logitraw', 'max_depth': 21}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3571185188927606, 'scale_pos_weight': 0.8451817266796982, 'min_child_weight': 1, 'n_estimators': 28, 'subsample': 0.9871210374576802, 'objective': 'binary:logitraw', 'max_depth': 19}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3611931050826456, 'scale_pos_weight': 0.9445111548357641, 'min_child_weight': 1, 'n_estimators': 28, 'subsample': 0.9899410864868162, 'objective': 'binary:logitraw', 'max_depth': 19}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3692904769393855, 'scale_pos_weight': 0.7863876115096612, 'min_child_weight': 2, 'n_estimators': 28, 'subsample': 0.9875966475825868, 'objective': 'binary:logitraw', 'max_depth': 19}
+
+// zz_real01_no_logitraw_redux2.log
+//
+//best score: 963736.26374  best params: {'colsample_bytree': 0.35056934237663206, 'scale_pos_weight': 0.8987127423243325, 'min_child_weight': 1, 'n_estimators': 32, 'subsample': 0.9181292450484958, 'objective': 'binary:logitraw', 'max_depth': 22}
+
+
+const std::map<const std::string, const std::string> prov58
+{
+    // no: 907500.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.32628857077959666"},
+    {"scale_pos_weight", "0.9061773692604194"},
+    {"min_child_weight", "1"},
+    {"n_estimators", "29"},
+    {"subsample", "0.9902699111496531"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "17"},
+};
+
+const std::map<const std::string, const std::string> prov57
+{
+    // no: 894562.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3278242420127301"},
+    {"scale_pos_weight", "0.9272129284699432"},
+    {"min_child_weight", "1"},
+    {"n_estimators", "27"},
+    {"subsample", "0.9909085285505224"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "19"},
+};
+
+const std::map<const std::string, const std::string> prov56
+{
+    // no: 907500.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3497790246913951"},
+    {"scale_pos_weight", "0.9019889905915804"},
+    {"min_child_weight", "1"},
+    {"n_estimators", "29"},
+    {"subsample", "0.9913474974403877"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "22"},
+};
+
+const std::map<const std::string, const std::string> prov55
+{
+    // no: 886062.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.35159830543006204"},
+    {"scale_pos_weight", "0.9175728221412991"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "26"},
+    {"subsample", "0.9954251462161149"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "21"},
+};
+
+const std::map<const std::string, const std::string> prov54
+{
+    // no: 902625.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.353837638648168"},
+    {"scale_pos_weight", "0.8822933201872466"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "28"},
+    {"subsample", "0.9993231720077536"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "21"},
+};
+
+const std::map<const std::string, const std::string> prov53
+{
+    // no: 926687.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3571185188927606"},
+    {"scale_pos_weight", "0.8451817266796982"},
+    {"min_child_weight", "1"},
+    {"n_estimators", "28"},
+    {"subsample", "0.9871210374576802"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "19"},
+};
+
+const std::map<const std::string, const std::string> prov52
+{
+    // no: 918062.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3611931050826456"},
+    {"scale_pos_weight", "0.9445111548357641"},
+    {"min_child_weight", "1"},
+    {"n_estimators", "28"},
+    {"subsample", "0.9899410864868162"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "19"},
+};
+
+const std::map<const std::string, const std::string> prov51
+{
+    // no: 900812.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3692904769393855"},
+    {"scale_pos_weight", "0.7863876115096612"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "28"},
+    {"subsample", "0.9875966475825868"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "19"},
+};
+
+const std::map<const std::string, const std::string> prov50
+{
+    // no: 932812.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.35056934237663206"},
+    {"scale_pos_weight", "0.8987127423243325"},
+    {"min_child_weight", "1"},
+    {"n_estimators", "32"},
+    {"subsample", "0.9181292450484958"},
+    {"objective", "binary:logitraw"},
+    {"max_depth", "22"},
+};
+
+
+// zz_real01_no_logistic.log
+//
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3540958116552945, 'scale_pos_weight': 0.8584527537488846, 'min_child_weight': 2, 'n_estimators': 14, 'subsample': 0.9772542239256012, 'objective': 'binary:logistic', 'max_depth': 20}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3542559257669884, 'scale_pos_weight': 0.8682223470370407, 'min_child_weight': 2, 'n_estimators': 15, 'subsample': 0.9833084560781972, 'objective': 'binary:logistic', 'max_depth': 19}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.36132883399937304, 'scale_pos_weight': 0.8823093134499994, 'min_child_weight': 2, 'n_estimators': 18, 'subsample': 0.9793976477846561, 'objective': 'binary:logistic', 'max_depth': 19}
+
+// zz_real01_no_logistic_redux.log
+//
+//best score: 963736.26374  best params: {'colsample_bytree': 0.33657978057604665, 'scale_pos_weight': 0.8573683059596318, 'min_child_weight': 2, 'n_estimators': 15, 'subsample': 0.9894277463763135, 'objective': 'binary:logistic', 'max_depth': 15}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.34037173395735754, 'scale_pos_weight': 0.8243105578729364, 'min_child_weight': 2, 'n_estimators': 13, 'subsample': 0.9888381162822553, 'objective': 'binary:logistic', 'max_depth': 6}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.34204729924033744, 'scale_pos_weight': 0.8835063937988653, 'min_child_weight': 2, 'n_estimators': 14, 'subsample': 0.9915480838891593, 'objective': 'binary:logistic', 'max_depth': 9}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.35305141865812073, 'scale_pos_weight': 0.8731313936644962, 'min_child_weight': 2, 'n_estimators': 15, 'subsample': 0.9852998311646444, 'objective': 'binary:logistic', 'max_depth': 7}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.3539272450788787, 'scale_pos_weight': 0.8364792147328022, 'min_child_weight': 2, 'n_estimators': 15, 'subsample': 0.9840792498279474, 'objective': 'binary:logistic', 'max_depth': 20}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.36733463170690295, 'scale_pos_weight': 0.8160282367523578, 'min_child_weight': 2, 'n_estimators': 14, 'subsample': 0.9910855954650549, 'objective': 'binary:logistic', 'max_depth': 5}
+//best score: 963736.26374  best params: {'colsample_bytree': 0.38262250790251573, 'scale_pos_weight': 0.8401648869863364, 'min_child_weight': 2, 'n_estimators': 15, 'subsample': 0.985807278329594, 'objective': 'binary:logistic', 'max_depth': 5}
+
+
+const std::map<const std::string, const std::string> prov49
+{
+    // no: 950625.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3540958116552945"},
+    {"scale_pos_weight", "0.8584527537488846"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "14"},
+    {"subsample", "0.9772542239256012"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "20"},
+};
+
+const std::map<const std::string, const std::string> prov48
+{
+    // no: 950625.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3542559257669884"},
+    {"scale_pos_weight", "0.8682223470370407"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "15"},
+    {"subsample", "0.9833084560781972"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "19"},
+};
+
+const std::map<const std::string, const std::string> prov47
+{
+    // no: 953125.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.36132883399937304"},
+    {"scale_pos_weight", "0.8823093134499994"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "18"},
+    {"subsample", "0.9793976477846561"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "19"},
+};
+
+const std::map<const std::string, const std::string> prov46
+{
+    // no: 948125.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.33657978057604665"},
+    {"scale_pos_weight", "0.8573683059596318"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "15"},
+    {"subsample", "0.9894277463763135"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "15"},
+};
+
+const std::map<const std::string, const std::string> prov45
+{
+    // no: 948125.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.34037173395735754"},
+    {"scale_pos_weight", "0.8243105578729364"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "13"},
+    {"subsample", "0.9888381162822553"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "6"},
+};
+
+const std::map<const std::string, const std::string> prov44
+{
+    // no: 950625.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.34204729924033744"},
+    {"scale_pos_weight", "0.8835063937988653"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "14"},
+    {"subsample", "0.9915480838891593"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "9"},
+};
+
+const std::map<const std::string, const std::string> prov43
+{
+    // no: 950625.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.35305141865812073"},
+    {"scale_pos_weight", "0.8731313936644962"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "15"},
+    {"subsample", "0.9852998311646444"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "7"},
+};
+
+const std::map<const std::string, const std::string> prov42
+{
+    // no: 949375.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.3539272450788787"},
+    {"scale_pos_weight", "0.8364792147328022"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "15"},
+    {"subsample", "0.9840792498279474"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "20"},
+};
+
+const std::map<const std::string, const std::string> prov41
+{
+    // no: 948812.500000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.36733463170690295"},
+    {"scale_pos_weight", "0.8160282367523578"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "14"},
+    {"subsample", "0.9910855954650549"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "5"},
+};
+
+const std::map<const std::string, const std::string> prov40
+{
+    // no: 951875.000000
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.045"},
+
+    {"colsample_bytree", "0.38262250790251573"},
+    {"scale_pos_weight", "0.8401648869863364"},
+    {"min_child_weight", "2"},
+    {"n_estimators", "15"},
+    {"subsample", "0.985807278329594"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "5"},
+};
+
 // zz_real01_no_pairsample.log
 //
 // best score: 961538.46154  best params: {'colsample_bytree': 0.39023114912939827, 'min_child_weight': 5, 'num_pairsample': 7.0, 'n_estimators': 15, 'subsample': 0.9908460260283289, 'objective': 'rank:pairwise', 'max_depth': 6}
@@ -131,7 +545,6 @@ const std::map<const std::string, const std::string> prov37
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.40257140602899394"},
@@ -152,7 +565,6 @@ const std::map<const std::string, const std::string> prov36
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.40883522617482504"},
@@ -173,7 +585,6 @@ const std::map<const std::string, const std::string> prov35
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.41299627909545644"},
@@ -194,7 +605,6 @@ const std::map<const std::string, const std::string> prov34
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4159461398136117"},
@@ -215,7 +625,6 @@ const std::map<const std::string, const std::string> prov33
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.41612516613533074"},
@@ -236,7 +645,6 @@ const std::map<const std::string, const std::string> prov32
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4191749018083908"},
@@ -257,7 +665,6 @@ const std::map<const std::string, const std::string> prov31
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4210115672233792"},
@@ -278,7 +685,6 @@ const std::map<const std::string, const std::string> prov30
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4224970166487822"},
@@ -300,7 +706,6 @@ const std::map<const std::string, const std::string> prov29
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4254906918714264"},
@@ -321,7 +726,6 @@ const std::map<const std::string, const std::string> prov28
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4263256879630181"},
@@ -342,7 +746,6 @@ const std::map<const std::string, const std::string> prov27
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.42674197124246305"},
@@ -363,7 +766,6 @@ const std::map<const std::string, const std::string> prov26
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.42994873010079765"},
@@ -384,7 +786,6 @@ const std::map<const std::string, const std::string> prov25
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4321009234295135"},
@@ -398,14 +799,13 @@ const std::map<const std::string, const std::string> prov25
 
 const std::map<const std::string, const std::string> prov24
 {
-    // 960062.500000
+    // no: 960062.500000
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4481345429579818"},
@@ -426,7 +826,6 @@ const std::map<const std::string, const std::string> prov23
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4497723491549631"},
@@ -447,7 +846,6 @@ const std::map<const std::string, const std::string> prov22
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4522591097747013"},
@@ -462,13 +860,13 @@ const std::map<const std::string, const std::string> prov22
 const std::map<const std::string, const std::string> prov21
 {
     // no: 970625.000000
+    // LB: 931670.71 (sub# 03)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4523124789653089"},
@@ -489,7 +887,6 @@ const std::map<const std::string, const std::string> prov20
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.45349675073083223"},
@@ -510,7 +907,6 @@ const std::map<const std::string, const std::string> prov19
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4545709058980515"},
@@ -531,7 +927,6 @@ const std::map<const std::string, const std::string> prov18
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4553807076115144"},
@@ -552,7 +947,6 @@ const std::map<const std::string, const std::string> prov17
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.45540856705915905"},
@@ -573,7 +967,6 @@ const std::map<const std::string, const std::string> prov16
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4561272715439755"},
@@ -594,7 +987,6 @@ const std::map<const std::string, const std::string> prov15
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4580721529184133"},
@@ -615,7 +1007,6 @@ const std::map<const std::string, const std::string> prov14
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4588200175861937"},
@@ -636,7 +1027,6 @@ const std::map<const std::string, const std::string> prov13
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.46138378668305846"},
@@ -657,7 +1047,6 @@ const std::map<const std::string, const std::string> prov12
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4664068889050296"},
@@ -678,7 +1067,6 @@ const std::map<const std::string, const std::string> prov11
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.46664011781726844"},
@@ -699,7 +1087,6 @@ const std::map<const std::string, const std::string> prov10
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.47301262990780135"},
@@ -720,7 +1107,6 @@ const std::map<const std::string, const std::string> prov09
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.47357315918715825"},
@@ -741,7 +1127,6 @@ const std::map<const std::string, const std::string> prov08
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.47429601710432967"},
@@ -762,7 +1147,6 @@ const std::map<const std::string, const std::string> prov07
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.47588785639818587"},
@@ -783,7 +1167,6 @@ const std::map<const std::string, const std::string> prov06
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4778607080648671"},
@@ -804,7 +1187,6 @@ const std::map<const std::string, const std::string> prov05
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4811255591508305"},
@@ -825,7 +1207,6 @@ const std::map<const std::string, const std::string> prov04
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.48136611811968055"},
@@ -846,7 +1227,6 @@ const std::map<const std::string, const std::string> prov03
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4868142216554417"},
@@ -866,7 +1246,6 @@ const std::map<const std::string, const std::string> prov02 // =sub01
     {"cache_opt", "0"},
 
     {"booster", "gbtree"},
-    {"objective", "rank:pairwise"},
     {"learning_rate", "0.045"},
 
     {"colsample_bytree", "0.4942777486217037"},
