@@ -332,6 +332,7 @@ const std::map<const std::string, const std::string> prov48
 const std::map<const std::string, const std::string> prov47
 {
     // no: 953125.000000
+    // LB: 949094.95 (sub# 4)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
@@ -347,6 +348,15 @@ const std::map<const std::string, const std::string> prov47
     {"subsample", "0.9793976477846561"},
     {"objective", "binary:logistic"},
     {"max_depth", "19"},
+    // 0.40: 814375.000000
+    // 0.45: 913750.000000
+    // 0.47: 946875.000000
+    // 0.48: 953125.000000
+    // 0.49: 953125.000000 *
+    // 0.50: 953125.000000
+    // 0.51: 947562.500000
+    // 0.60: 879250.000000
+    // 0.70: 818750.000000
 };
 
 const std::map<const std::string, const std::string> prov46
@@ -472,6 +482,7 @@ const std::map<const std::string, const std::string> prov41
 const std::map<const std::string, const std::string> prov40
 {
     // no: 951875.000000
+    // LB: 942194.95 (sub# 5)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
@@ -715,6 +726,13 @@ const std::map<const std::string, const std::string> prov29
     {"subsample", "0.9996251139963696"},
     {"objective", "rank:pairwise"},
     {"max_depth", "21"},
+    // 0.480: 969375.000000
+    // 0.490: 969375.000000
+    // 0.495: 969375.000000
+    // 0.500: 975625.000000
+    // 0.505: 973125.000000
+    // 0.510: 973125.000000
+    // 0.520: 968812.500000
 };
 
 const std::map<const std::string, const std::string> prov28
@@ -1001,6 +1019,7 @@ const std::map<const std::string, const std::string> prov15
 const std::map<const std::string, const std::string> prov14
 {
     // no: 970625.000000
+    // LB: 931670.71 (sub# 6) DP
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
