@@ -783,7 +783,7 @@ ElectronicPartsClassification::classifyParts(
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
 
-    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov21};
+    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov14};
     std::vector<float> train_y__no;
     std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__no),
         [](const float what)
