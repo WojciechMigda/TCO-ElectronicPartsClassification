@@ -676,7 +676,8 @@ run_binary_estimators(
             y_hat_proba_cumm.begin(),
             [](const float x, const float a)
             {
-                return a + x;
+                return a + (x > 0.5 ? 1. : 0.);
+//                return a + x;
             });
     }
 
@@ -783,7 +784,10 @@ ElectronicPartsClassification::classifyParts(
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
 
-    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov14};
+    // CV: 948125.000000
+    // LB: 940382.83
+//    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov47, &params::no::prov40, &params::no::sub01};
+    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov47, &params::no::prov40, &params::no::sub01};
     std::vector<float> train_y__no;
     std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__no),
         [](const float what)

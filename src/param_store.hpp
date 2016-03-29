@@ -75,6 +75,31 @@ const std::map<const std::string, const std::string> sub01
 namespace no
 {
 
+// zz_real01_no_pairwise_eta0.01.log
+//
+//best score: 965934.06593  best params: {'colsample_bytree': 0.481290741316664, 'min_child_weight': 1, 'num_pairsample': 20.0, 'n_estimators': 13, 'subsample': 0.9857838641555755, 'objective': 'binary:logistic', 'max_depth': 11}
+const std::map<const std::string, const std::string> prov60
+{
+    // no: 960062.500000
+    // LB: 927125.25 (sub# 8)
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.01"},
+
+    {"colsample_bytree", "0.481290741316664"},
+    {"min_child_weight", "1"},
+    {"num_pairsample", "20.0"},
+    {"n_estimators", "13"},
+    {"subsample", "0.9857838641555755"},
+    {"objective", "binary:logistic"},
+    {"max_depth", "11"},
+};
+
+
 // zz_real01_no_logitraw.log
 //
 //best score: 963736.26374  best params: {'colsample_bytree': 0.32628857077959666, 'scale_pos_weight': 0.9061773692604194, 'min_child_weight': 1, 'n_estimators': 29, 'subsample': 0.9902699111496531, 'objective': 'binary:logitraw', 'max_depth': 17}
@@ -1060,6 +1085,7 @@ const std::map<const std::string, const std::string> prov13
 const std::map<const std::string, const std::string> prov12
 {
     // no: 970625.000000
+    // LB: 931670.71 (sub# 9) DP
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
@@ -1080,6 +1106,7 @@ const std::map<const std::string, const std::string> prov12
 const std::map<const std::string, const std::string> prov11
 {
     // no: 970625.000000
+    // LB: 922579.8 (sub# 7) DP
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
@@ -1140,6 +1167,7 @@ const std::map<const std::string, const std::string> prov09
 const std::map<const std::string, const std::string> prov08
 {
     // no: 966312.500000
+    // LB: 927125.25 (sub# 11)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
@@ -1220,6 +1248,7 @@ const std::map<const std::string, const std::string> prov05
 const std::map<const std::string, const std::string> prov04
 {
     // no: 968125.000000
+    // LB: 936216.16 (sub# 10)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
