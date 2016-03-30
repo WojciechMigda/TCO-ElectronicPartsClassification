@@ -155,10 +155,35 @@ def AvnetScorer(y_true, y_pred):
     from numpy import array, multiply
     cost = array([[0.0, 0.20, 0.70], [0.50, 0.0, 0.01], [1.00, 0.01, 0.0]])
     score_m = multiply(cmx, cost)
-    score = 1e6 * (1. - score_m.sum()) / cmx.sum()
+    score = 1e6 * (1. - score_m.sum() / cmx.sum())
     return score
 
 #from sklearn.base import BaseEstimator, ClassifierMixin
+from xgb_sklearn import XGBClassifier
+class XGBClassifier_01(XGBClassifier):
+    def __init__(self, max_depth=3, learning_rate=0.1,
+                 n_estimators=100, silent=True,
+                 objective="binary:logistic",
+                 nthread=-1, gamma=0, min_child_weight=1,
+                 max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,
+                 reg_alpha=0, reg_lambda=1, scale_pos_weight=1,
+                 base_score=0.5, seed=0, missing=None, num_pairsample=1, booster_type='gbtree'):
+        super(XGBClassifier_01, self).__init__(max_depth, learning_rate,
+                                            n_estimators, silent, objective,
+                                            nthread, gamma, min_child_weight,
+                                            max_delta_step, subsample,
+                                            colsample_bytree, colsample_bylevel,
+                                            reg_alpha, reg_lambda,
+                                            scale_pos_weight, base_score, seed, missing, num_pairsample, booster_type)
+        pass
+    def fit(self, X, y, sample_weight=None, eval_set=None, eval_metric=None,
+        early_stopping_rounds=None, verbose=True):
+        from numpy import clip
+        new_y = clip(y, 0, 1)
+        return super(XGBClassifier_01, self).fit(X, new_y, sample_weight,
+            eval_set, eval_metric, early_stopping_rounds, verbose)
+
+    pass
 
 
 def work(estimator,
@@ -195,9 +220,13 @@ def work(estimator,
         symbols[col] = list(uniq)
         pass
 
+    cust_db = {}
+    zip_db = {}
+
     grouped = train.groupby(['PRODUCT_NUMBER', 'CUSTOMER_SEGMENT1'])
     samples = []
     for k, df in grouped:
+        #print('{' + '"{}", \'{}\''.format(k[0], 'B' if k[1] else 'A') + '},')
         sample = Fractions(df, symbols, [
         'PRICE_METHOD', 'ORDER_SOURCE', 'CUSTOMER_ACCOUNT_TYPE',
         'CUSTOMER_MANAGED_LEVEL', 'CUSTOMER_TYPE2', 'CUSTOMER_TYPE1',
@@ -211,28 +240,75 @@ def work(estimator,
               ]
         sample = sample.append(df.iloc[0][ATTRIBUTES2])
 
-        pcost1_mean = df['PRODUCT_COST1'].abs().mean()
-        pcost1_std = df['PRODUCT_COST1'].abs().std()
+        ########################
+        boxes_sold = df['TOTAL_BOXES_SOLD']
+
+        pcost1 = df['PRODUCT_COST1'].abs()
+        pcost1_per_item = pcost1 / boxes_sold
+        pcost1_mean = pcost1_per_item.mean()
+        pcost1_std = pcost1_per_item.std()
         sample.set_value('PCOST1_REL_STD', pcost1_std / pcost1_mean)
+        sample.set_value('PCOST1_REL_MAX', pcost1_per_item.max() / pcost1_mean)
+        sample.set_value('PCOST1_REL_MIN', pcost1_per_item.min() / pcost1_mean)
 
-        monthly = df['TRANSACTION_DATE_2'].value_counts(normalize=True)
-        monthly = monthly.reindex([i + 1 for i in range(12)], fill_value=0.)
-        sample.set_value('TX_Q1', monthly[[1, 2, 3]].sum())
-        sample.set_value('TX_Q2', monthly[[4, 5, 6]].sum())
-        sample.set_value('TX_Q3', monthly[[7, 8, 9]].sum())
-        sample.set_value('TX_Q4', monthly[[10, 11, 12]].sum())
-        sample = sample.append(monthly.rename(lambda i: 'TX_M_' + str(i)))
+        price = df['PRODUCT_PRICE'].abs()
+        price_mean = price.mean()
+        price_std = price.std()
+        sample.set_value('PRICE_REL_STD', price_std / price_mean)
+        sample.set_value('PRICE_REL_MAX', price.max() / price_mean)
+        sample.set_value('PRICE_REL_MIN', price.min() / price_mean)
 
-        tx_days = df['TRANSACTION_DATE_1'].combine(
-                df[['TRANSACTION_DATE_2', 'TRANSACTION_DATE_3']],
-                 func=lambda y, m_d: y * 365 + m_d['TRANSACTION_DATE_2'] * 30 + m_d['TRANSACTION_DATE_3'])
-        tx_days.sort()
-        delta_tx_days = tx_days.diff()
-        means_delta_tx_days = delta_tx_days.mean()
-        sample.set_value('DTX_DAYS_MEAN', means_delta_tx_days)
-        sample.set_value('DTX_DAYS_REL_STD', delta_tx_days.std() / means_delta_tx_days)
+        if sample['PRODUCT_UNIT_OF_MEASURE'] < 2:
+            commision = price / pcost1_per_item
+        else:
+            commision = df['GROSS_SALES'].abs() / pcost1
+        commision_mean = commision.mean()
+        commision_std = commision.std()
+        sample.set_value('COMMN_MEAN', commision_mean)
+        sample.set_value('COMMN_REL_STD', commision_std / commision_mean)
+        sample.set_value('COMMN_REL_MAX', commision.max() / commision_mean)
+        sample.set_value('COMMN_REL_MIN', commision.min() / commision_mean)
 
-#        # most frequent customer
+#        monthly = df['TRANSACTION_DATE_2'].value_counts(normalize=True)
+#        monthly = monthly.reindex([i + 1 for i in range(12)], fill_value=0.)
+#        sample.set_value('TX_Q1', monthly[[1, 2, 3]].sum())
+#        sample.set_value('TX_Q2', monthly[[4, 5, 6]].sum())
+#        sample.set_value('TX_Q3', monthly[[7, 8, 9]].sum())
+#        sample.set_value('TX_Q4', monthly[[10, 11, 12]].sum())
+#        sample = sample.append(monthly.rename(lambda i: 'TX_M_' + str(i)))
+#
+#        tx_days = df['TRANSACTION_DATE_1'].combine(
+#                df[['TRANSACTION_DATE_2', 'TRANSACTION_DATE_3']],
+#                 func=lambda y, m_d: y * 365 + m_d['TRANSACTION_DATE_2'] * 30 + m_d['TRANSACTION_DATE_3'])
+#        tx_days.sort()
+#        delta_tx_days = tx_days.diff()
+#        means_delta_tx_days = delta_tx_days.mean()
+#        sample.set_value('DTX_DAYS_MEAN', means_delta_tx_days)
+#        sample.set_value('DTX_DAYS_REL_STD', delta_tx_days.std() / means_delta_tx_days)
+        ########################
+
+        customers = set(df['CUSTOMER_NUMBER'].values)
+        for c in customers:
+            a = int(sample['PRODUCT_UNIT_OF_MEASURE'])
+            if a in cust_db:
+                if int(c) in cust_db[a]:
+                    cust_db[a][int(c)] += 1
+                else:
+                    cust_db[a][int(c)] = 1
+            else:
+                cust_db[a] = {c: 1}
+        zips = set(df['CUSTOMER_ZIP'].values)
+        for z in zips:
+            a = int(sample['PRODUCT_UNIT_OF_MEASURE'])
+            if a in zip_db:
+                if int(z) in zip_db[a]:
+                    zip_db[a][int(z)] += 1
+                else:
+                    zip_db[a][int(z)] = 1
+            else:
+                zip_db[a] = {z: 1}
+
+#        #most frequent customer
 #        custcounts = df['CUSTOMER_NUMBER'].value_counts()
 #        topcust = custcounts.index[0]
 #        sample.set_value('TOP_CUST', topcust)
@@ -255,6 +331,7 @@ def work(estimator,
     train_df = DataFrame.from_records(samples)
     train_y = train_df['SPECIAL_PART'].values
     train_X = train_df.drop(['SPECIAL_PART'], axis=1)
+    train_keys = [k for k, _ in grouped]
 
     avnet_kwargs = \
     {
@@ -293,8 +370,8 @@ def work(estimator,
         print(clf)
         def objective(space):
             #param_grid = {'objective': ['binary:logistic']}
-            #param_grid = {'objective': ['binary:logitraw']}
-            param_grid = {'objective': ['rank:pairwise']}
+            param_grid = {'objective': ['multi:softmax']}
+            #param_grid = {'objective': ['rank:pairwise']}
             #param_grid = {'objective': ['rank:pairwise'], 'booster_type': ['gblinear']}
             for k, v in space.items():
                 if k in ['n_estimators', 'max_depth', 'min_child_weight', 'num_pairwise']:
@@ -305,10 +382,38 @@ def work(estimator,
 
             from sklearn.cross_validation import StratifiedKFold, LeaveOneOut
             from sklearn.grid_search import GridSearchCV
+
+            from sklearn.cross_validation import _PartitionIterator
+            class CustomLOO(_PartitionIterator):
+                def __init__(self, train_keys):
+                    ids = set(t[0] for t in train_keys)
+                    self.n_folds = len(ids)
+                    self.n = len(train_keys)
+
+                    from numpy import zeros, array
+                    test_folds = zeros(len(train_keys))
+                    for i, k in enumerate(ids):
+                        mask = [t[0] == k for t in train_keys]
+                        test_folds[array(mask)] = i
+                        pass
+                    self.test_folds = test_folds
+                    pass
+
+                #def _iter_test_indices(self):
+                #    return range(self.n_folds)
+                def _iter_test_masks(self):
+                    for i in range(self.n_folds):
+                        yield self.test_folds == i
+
+                def __len__(self):
+                    return self.n_folds
+                pass
+
             grid = GridSearchCV(estimator=clf,
                             param_grid=param_grid,
                             #cv=StratifiedKFold(train_y, n_folds=nfolds),
-                            cv=LeaveOneOut(91),
+                            #cv=LeaveOneOut(91),
+                            cv=CustomLOO(train_keys),
                             scoring=tco_scorer,
                             n_jobs=1,
                             #verbose=2,
@@ -325,22 +430,22 @@ def work(estimator,
         # cheatsheet:
         # https://github.com/hyperopt/hyperopt/wiki/FMin#21-parameter-expressions
         space = {
-            'n_estimators': hp.quniform("x_n_estimators", 50, 400, 10),
-            'max_depth': hp.quniform("x_max_depth", 1, 16, 1),
+            'n_estimators': hp.quniform("x_n_estimators", 10, 80, 5),
+            'max_depth': hp.quniform("x_max_depth", 1, 24, 1),
             'min_child_weight': hp.quniform ('x_min_child', 1, 16, 1),
             #'gamma': hp.uniform ('x_gamma', 0.0, 2.0),
-            #'scale_pos_weight': hp.uniform ('x_scale_pos_weight', 0.2, 1.0),
+            'scale_pos_weight': hp.uniform ('x_scale_pos_weight', 0.2, 1.0),
 
-            #'num_pairsample': hp.quniform ('x_num_pairsample', 1, 8, 1),
+            #'num_pairsample': hp.quniform ('x_num_pairsample', 1, 16, 1),
             #'learning_rate': hp.uniform ('x_learning_rate', 0.03, 0.06),
 
-            'subsample': hp.uniform ('x_subsample', 0.4, 1.0),
-            'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.4, 1.0)
+            'subsample': hp.uniform ('x_subsample', 0.8, 1.0),
+            'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.3, 1.0)
             }
         best = fmin(fn=objective,
             space=space,
             algo=tpe.suggest,
-            max_evals=400,
+            max_evals=500,
             )
         print(best)
         pass
