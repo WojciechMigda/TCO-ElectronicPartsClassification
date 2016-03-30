@@ -221,82 +221,6 @@ predict(
 }
 
 
-array_type
-get_dummies(std::valarray<real_type> && what)
-{
-    auto unique = std::unordered_set<real_type>();
-
-    std::copy_if(std::begin(what), std::end(what), std::inserter(unique, unique.end()),
-        [](real_type v)
-        {
-            return !is_missing(v);
-        }
-    );
-
-//    std::cout << what.size() << " " << unique.size() << std::endl;
-
-    array_type newmat({what.size(), unique.size()}, 0.0);
-
-    int index{0};
-
-    for (const auto v : unique)
-    {
-        const std::valarray<bool> bool_mask = (what == v);
-        std::valarray<real_type> mask(bool_mask.size());
-
-        std::copy(std::begin(bool_mask), std::end(bool_mask), std::begin(mask));
-
-        newmat[newmat.column(index)] = mask;
-
-        ++index;
-    }
-
-    return newmat;
-}
-
-array_type
-one_hot(const array_type & what, std::vector<std::string> & colnames, std::vector<std::size_t> && columns)
-{
-    array_type newmat(what);
-
-    for (const auto col : columns)
-    {
-        const auto dummies = get_dummies(what[what.column(col)]);
-
-        newmat = num::add_columns<real_type>(newmat, dummies);
-
-        const std::string colname = colnames[col];
-        for (std::size_t dummy{0}; dummy < dummies.shape().second; ++dummy)
-        {
-            colnames.emplace_back(colname + "_" + std::to_string(dummy + 1));
-        }
-
-        {
-            const std::size_t ndummies = dummies.shape().second;
-
-            const std::valarray<real_type> first_dummy = dummies[dummies.column(0)];
-            const std::valarray<real_type> nth_df = newmat[newmat.column(-ndummies)];
-            assert(std::equal(std::begin(first_dummy), std::end(first_dummy), std::begin(nth_df)));
-
-            const std::valarray<real_type> last_dummy = dummies[dummies.column(-1)];
-            const std::valarray<real_type> last_df = newmat[newmat.column(-1)];
-            assert(std::equal(std::begin(last_dummy), std::end(last_dummy), std::begin(last_df)));
-        }
-    }
-
-    // we will only delete columns right-to-left
-    std::sort(columns.begin(), columns.end(), std::greater<std::size_t>());
-    for (const auto col : columns)
-    {
-        newmat = num::del_column<real_type>(newmat, col);
-
-        colnames.erase(colnames.begin() + col);
-    }
-
-    return newmat;
-}
-
-
 std::size_t
 colidx(const std::vector<std::string> & colnames, const std::string & name)
 {
@@ -676,8 +600,7 @@ run_binary_estimators(
             y_hat_proba_cumm.begin(),
             [](const float x, const float a)
             {
-                return a + (x > 0.5 ? 1. : 0.);
-//                return a + x;
+                return a + x;
             });
     }
 
@@ -784,14 +707,12 @@ ElectronicPartsClassification::classifyParts(
     std::cerr << "test_data shape: " << test_data.shape() << std::endl;
 
 
-    // CV: 948125.000000
-    // LB: 940382.83
-//    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov47, &params::no::prov40, &params::no::sub01};
-    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov47, &params::no::prov40, &params::no::sub01};
+    const std::map<const std::string, const std::string> * PARAMS_SET__no[] = {&params::no::prov47};
     std::vector<float> train_y__no;
     std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__no),
         [](const float what)
         {
+            // quantize train y vector into {0,1}
             return what >= 0.5 ? 1. : 0.;
         }
     );
@@ -800,41 +721,10 @@ ElectronicPartsClassification::classifyParts(
         std::begin(PARAMS_SET__no), std::end(PARAMS_SET__no),
         time0, train_data, train_y__no, test_data);
 
-//    const std::map<const std::string, const std::string> * PARAMS_SET__yes[] = {&params::yes::sub01};
-//    std::vector<float> train_y__yes;
-//    std::transform(train_y.cbegin(), train_y.cend(), std::back_inserter(train_y__yes),
-//        [](const float what)
-//        {
-//            return what >= 1.5 ? 1. : 0.;
-//        }
-//    );
-//
-//    const auto y_hat_yes = run_binary_estimators(
-//        std::begin(PARAMS_SET__yes), std::end(PARAMS_SET__yes),
-//        time0, train_data, train_y__yes, test_data);
-
 
     ////////////////////////////////////////////////////////////////////////////
 
     std::vector<std::size_t> y_hat(y_hat_no);
-//    std::vector<std::size_t> y_hat;
-//    std::transform(y_hat_no.cbegin(), y_hat_no.cend(), y_hat_yes.cbegin(), std::back_inserter(y_hat),
-//        [](const float no, const float yes)
-//        {
-//            if (no < 0.5)
-//            {
-//                return 0.;
-//            }
-//            else if (yes > 0.5)
-//            {
-//                return 2.;
-//            }
-//            else
-//            {
-//                return 1.;
-//            }
-//        }
-//    );
 
     const std::string yes_no_maybe[] = {"No", "Maybe", "Yes"};
     std::map<int, std::pair<std::string, std::string>> responses;

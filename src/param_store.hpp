@@ -75,8 +75,52 @@ const std::map<const std::string, const std::string> sub01
 namespace no
 {
 
-// zz_real01_no_pairwise_eta0.01.log
-//
+// best score: 965934.06593  best params: {'colsample_bytree': 0.45594999535036124, 'min_child_weight': 4, 'num_pairsample': 9.0, 'n_estimators': 12, 'subsample': 0.9684008407462298, 'objective': 'rank:pairwise', 'max_depth': 9}
+// best score: 965934.06593  best params: {'colsample_bytree': 0.4712926785794386, 'min_child_weight': 4, 'num_pairsample': 13.0, 'n_estimators': 16, 'subsample': 0.9765346108120349, 'objective': 'rank:pairwise', 'max_depth': 9}
+
+const std::map<const std::string, const std::string> prov71
+{
+    // no: 960062.500000
+    // LB: 927125.25 (sub# 14)
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.01"},
+
+    {"colsample_bytree", "0.45594999535036124"},
+    {"min_child_weight", "4"},
+    {"num_pairsample", "9"},
+    {"n_estimators", "12"},
+    {"subsample", "0.9684008407462298"},
+    {"objective", "rank:pairwise"},
+    {"max_depth", "9"}
+};
+
+const std::map<const std::string, const std::string> prov70
+{
+    // no: 953812.500000
+    // LB:
+    {"missing", "nan"},
+    {"seed", "0"},
+    {"silent", "1"},
+    {"cache_opt", "0"},
+
+    {"booster", "gbtree"},
+    {"learning_rate", "0.01"},
+
+    {"colsample_bytree", "0.4712926785794386"},
+    {"min_child_weight", "4"},
+    {"num_pairsample", "13"},
+    {"n_estimators", "16"},
+    {"subsample", "0.9765346108120349"},
+    {"objective", "rank:pairwise"},
+    {"max_depth", "9"}
+};
+
+
 //best score: 965934.06593  best params: {'colsample_bytree': 0.481290741316664, 'min_child_weight': 1, 'num_pairsample': 20.0, 'n_estimators': 13, 'subsample': 0.9857838641555755, 'objective': 'binary:logistic', 'max_depth': 11}
 const std::map<const std::string, const std::string> prov60
 {
@@ -92,7 +136,7 @@ const std::map<const std::string, const std::string> prov60
 
     {"colsample_bytree", "0.481290741316664"},
     {"min_child_weight", "1"},
-    {"num_pairsample", "20.0"},
+    {"num_pairsample", "20.0"}, // !!! blad
     {"n_estimators", "13"},
     {"subsample", "0.9857838641555755"},
     {"objective", "binary:logistic"},
@@ -373,15 +417,6 @@ const std::map<const std::string, const std::string> prov47
     {"subsample", "0.9793976477846561"},
     {"objective", "binary:logistic"},
     {"max_depth", "19"},
-    // 0.40: 814375.000000
-    // 0.45: 913750.000000
-    // 0.47: 946875.000000
-    // 0.48: 953125.000000
-    // 0.49: 953125.000000 *
-    // 0.50: 953125.000000
-    // 0.51: 947562.500000
-    // 0.60: 879250.000000
-    // 0.70: 818750.000000
 };
 
 const std::map<const std::string, const std::string> prov46
@@ -715,6 +750,7 @@ const std::map<const std::string, const std::string> prov31
 const std::map<const std::string, const std::string> prov30
 {
     // no: 964375.000000
+    // LB: 922579.80 (sub# 15)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
@@ -751,13 +787,6 @@ const std::map<const std::string, const std::string> prov29
     {"subsample", "0.9996251139963696"},
     {"objective", "rank:pairwise"},
     {"max_depth", "21"},
-    // 0.480: 969375.000000
-    // 0.490: 969375.000000
-    // 0.495: 969375.000000
-    // 0.500: 975625.000000
-    // 0.505: 973125.000000
-    // 0.510: 973125.000000
-    // 0.520: 968812.500000
 };
 
 const std::map<const std::string, const std::string> prov28
@@ -1127,6 +1156,7 @@ const std::map<const std::string, const std::string> prov11
 const std::map<const std::string, const std::string> prov10
 {
     // no: 965625.000000
+    // LB: 936216.16 (sub# 13)
     {"missing", "nan"},
     {"seed", "0"},
     {"silent", "1"},
