@@ -161,60 +161,60 @@ def AvnetScorer(y_true, y_pred):
     return score
 
 #from sklearn.base import BaseEstimator, ClassifierMixin
-#from xgb_sklearn import XGBClassifier, XGBRegressor
-#class XGBClassifier_01(XGBClassifier):
-#    def __init__(self, max_depth=3, learning_rate=0.1,
-#                 n_estimators=100, silent=True,
-#                 objective="binary:logistic",
-#                 nthread=-1, gamma=0, min_child_weight=1,
-#                 max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,
-#                 reg_alpha=0, reg_lambda=1, scale_pos_weight=1,
-#                 base_score=0.5, seed=0, missing=None, num_pairsample=1, booster_type='gbtree'):
-#        super(XGBClassifier_01, self).__init__(max_depth, learning_rate,
-#                                            n_estimators, silent, objective,
-#                                            nthread, gamma, min_child_weight,
-#                                            max_delta_step, subsample,
-#                                            colsample_bytree, colsample_bylevel,
-#                                            reg_alpha, reg_lambda,
-#                                            scale_pos_weight, base_score, seed, missing, num_pairsample, booster_type)
-#        pass
-#    def fit(self, X, y, sample_weight=None, eval_set=None, eval_metric=None,
-#        early_stopping_rounds=None, verbose=True):
-#        from numpy import clip
-#        new_y = clip(y, 0, 1)
-#        return super(XGBClassifier_01, self).fit(X, new_y, sample_weight,
-#            eval_set, eval_metric, early_stopping_rounds, verbose)
-#
-#    pass
+from xgb_sklearn import XGBClassifier, XGBRegressor
+class XGBClassifier_01(XGBClassifier):
+    def __init__(self, max_depth=3, learning_rate=0.1,
+                 n_estimators=100, silent=True,
+                 objective="binary:logistic",
+                 nthread=-1, gamma=0, min_child_weight=1,
+                 max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,
+                 reg_alpha=0, reg_lambda=1, scale_pos_weight=1,
+                 base_score=0.5, seed=0, missing=None, num_pairsample=1, booster_type='gbtree'):
+        super(XGBClassifier_01, self).__init__(max_depth, learning_rate,
+                                            n_estimators, silent, objective,
+                                            nthread, gamma, min_child_weight,
+                                            max_delta_step, subsample,
+                                            colsample_bytree, colsample_bylevel,
+                                            reg_alpha, reg_lambda,
+                                            scale_pos_weight, base_score, seed, missing, num_pairsample, booster_type)
+        pass
+    def fit(self, X, y, sample_weight=None, eval_set=None, eval_metric=None,
+        early_stopping_rounds=None, verbose=True):
+        from numpy import clip
+        new_y = clip(y, 0, 1)
+        return super(XGBClassifier_01, self).fit(X, new_y, sample_weight,
+            eval_set, eval_metric, early_stopping_rounds, verbose)
+
+    pass
 
 
-#class XGBRegressorQ(XGBRegressor):
-#    def __init__(self, max_depth=3, learning_rate=0.1,
-#                 n_estimators=100, silent=True,
-#                 objective="binary:logistic",
-#                 nthread=-1, gamma=0, min_child_weight=1,
-#                 max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,
-#                 reg_alpha=0, reg_lambda=1, scale_pos_weight=1,
-#                 base_score=0.5, seed=0, missing=None, num_pairsample=1, booster_type='gbtree'):
-#        super(XGBRegressorQ, self).__init__(max_depth, learning_rate,
-#                                            n_estimators, silent, objective,
-#                                            nthread, gamma, min_child_weight,
-#                                            max_delta_step, subsample,
-#                                            colsample_bytree, colsample_bylevel,
-#                                            reg_alpha, reg_lambda,
-#                                            scale_pos_weight, base_score, seed, missing, num_pairsample, booster_type)
-#        pass
-#
-#    def predict(self, data, output_margin=False, ntree_limit=0):
-#        # pylint: disable=missing-docstring,invalid-name
-#        result = super(XGBRegressorQ, self).predict(data, output_margin,
-#                                                       ntree_limit)
-#        from numpy import digitize
-##        result = digitize(result, [0.33, 0.67])
-#        #result = digitize(result, [0.5, 1.5])
-#        result = digitize(result, [0.6, 1.6])
-#        return result
-#    pass
+class XGBRegressorQ(XGBRegressor):
+    def __init__(self, max_depth=3, learning_rate=0.1,
+                 n_estimators=100, silent=True,
+                 objective="binary:logistic",
+                 nthread=-1, gamma=0, min_child_weight=1,
+                 max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,
+                 reg_alpha=0, reg_lambda=1, scale_pos_weight=1,
+                 base_score=0.5, seed=0, missing=None, num_pairsample=1, booster_type='gbtree'):
+        super(XGBRegressorQ, self).__init__(max_depth, learning_rate,
+                                            n_estimators, silent, objective,
+                                            nthread, gamma, min_child_weight,
+                                            max_delta_step, subsample,
+                                            colsample_bytree, colsample_bylevel,
+                                            reg_alpha, reg_lambda,
+                                            scale_pos_weight, base_score, seed, missing, num_pairsample, booster_type)
+        pass
+
+    def predict(self, data, output_margin=False, ntree_limit=0):
+        # pylint: disable=missing-docstring,invalid-name
+        result = super(XGBRegressorQ, self).predict(data, output_margin,
+                                                       ntree_limit)
+        from numpy import digitize
+#        result = digitize(result, [0.33, 0.67])
+        #result = digitize(result, [0.5, 1.5])
+        result = digitize(result, [0.6, 1.6])
+        return result
+    pass
 
 
 def work(estimator,
@@ -297,13 +297,6 @@ def work(estimator,
         sample.set_value('COMMN_REL_MAX', commision.max() / commision_mean)
         sample.set_value('COMMN_REL_MIN', commision.min() / commision_mean)
 
-#        tx_days = df['TRANSACTION_DATE_1'].combine(
-#                df[['TRANSACTION_DATE_2', 'TRANSACTION_DATE_3']],
-#                 func=lambda y, m_d: (y - 1970)* 365 + m_d['TRANSACTION_DATE_2'] * 30 + m_d['TRANSACTION_DATE_3'] - 1)
-#        sample.set_value('FIRST_TX', tx_days.min())
-#        august2014 = (2014 - 1970) * 365 + 8 * 30
-#        sample.set_value('LAST_365D_TX', (tx_days > august2014).sum())
-
 #        monthly = df['TRANSACTION_DATE_2'].value_counts(normalize=True)
 #        monthly = monthly.reindex([i + 1 for i in range(12)], fill_value=0.)
 #        sample.set_value('TX_Q1', monthly[[1, 2, 3]].sum())
@@ -347,9 +340,6 @@ def work(estimator,
     train_X = train_df.drop(['SPECIAL_PART'], axis=1)
     train_keys = [k for k, _ in grouped]
 
-    from numpy import digitize
-    train_y = digitize(train_y, [0.5])
-
     avnet_kwargs = \
     {
         #'objective': 'reg:logistic',
@@ -384,10 +374,11 @@ def work(estimator,
     tco_scorer = make_scorer(AvnetScorer)
 
     if do_hyperopt:
+        print(clf)
         def objective(space):
-            param_grid = {'objective': ['binary:logistic']}
+            #param_grid = {'objective': ['binary:logistic']}
             #param_grid = {'objective': ['binary:logitraw']}
-            #param_grid = {'objective': ['rank:pairwise']}
+            param_grid = {'objective': ['rank:pairwise']}
             #param_grid = {'objective': ['rank:pairwise'], 'booster_type': ['gblinear']}
             for k, v in space.items():
                 if k in ['n_estimators', 'max_depth', 'min_child_weight', 'num_pairwise']:
@@ -446,24 +437,22 @@ def work(estimator,
         # cheatsheet:
         # https://github.com/hyperopt/hyperopt/wiki/FMin#21-parameter-expressions
         space = {
-            'n_estimators': hp.quniform("x_n_estimators", 2, 32, 1),
+            'n_estimators': hp.quniform("x_n_estimators", 10, 80, 5),
             'max_depth': hp.quniform("x_max_depth", 1, 24, 1),
             'min_child_weight': hp.quniform ('x_min_child', 1, 16, 1),
             #'gamma': hp.uniform ('x_gamma', 0.0, 2.0),
-            'scale_pos_weight': hp.uniform ('x_scale_pos_weight', 0.2, 1.0),
+            #'scale_pos_weight': hp.uniform ('x_scale_pos_weight', 0.2, 1.0),
 
-            #'num_pairsample': hp.quniform ('x_num_pairsample', 1, 20, 1),
+            'num_pairsample': hp.quniform ('x_num_pairsample', 1, 16, 1),
             #'learning_rate': hp.uniform ('x_learning_rate', 0.03, 0.06),
 
             'subsample': hp.uniform ('x_subsample', 0.8, 1.0),
             'colsample_bytree': hp.uniform ('x_colsample_bytree', 0.3, 1.0)
             }
-        print(clf)
-        print(space)
         best = fmin(fn=objective,
             space=space,
             algo=tpe.suggest,
-            max_evals=1000,
+            max_evals=500,
             )
         print(best)
         pass
